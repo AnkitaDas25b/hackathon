@@ -41,7 +41,7 @@ export function CaseWorkspace() {
     <div className={isFullscreen ? 'fixed inset-0 z-50 flex min-w-0 flex-col overflow-y-auto bg-slate-950 lg:flex-row' : 'flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row'} style={{ minHeight: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
-        className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[200px] lg:border-r"
+        className={`${isFullscreen ? 'hidden' : 'flex'} w-full flex-col shrink-0 overflow-y-auto lg:w-[200px] lg:border-r`}
         style={{ borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}
       >
         <div className="px-3 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)', borderBottom: '1px solid #E2E8F0' }}>
@@ -102,7 +102,7 @@ export function CaseWorkspace() {
           {/* Zoom control */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => { setZoom(z => Math.max(0.5, z - 0.25)); setSlice(s => Math.max(1, s - 1)) }}
+              onClick={() => { setZoom(z => Math.max(1, z - 0.25)); setSlice(s => Math.max(1, s - 1)) }}
               className="text-xs px-2 py-1 rounded"
               style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
             >−</button>
@@ -137,7 +137,7 @@ export function CaseWorkspace() {
         </div>
 
         {/* Scan area */}
-        <div className="flex min-h-[420px] min-w-0 flex-1 overflow-hidden lg:min-h-0">
+        <div className={`${isFullscreen ? 'min-h-0' : 'min-h-[420px]'} flex min-w-0 flex-1 overflow-hidden lg:min-h-0`}>
           {/* Series thumbnails */}
           <div
             className="flex flex-col gap-2 p-2 overflow-y-auto"
@@ -168,7 +168,7 @@ export function CaseWorkspace() {
           </div>
 
           {/* Main scan viewport */}
-          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }}>
+          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }} onPointerMove={e => { if (tool === 'scroll' && e.buttons === 1 && Math.abs(e.movementY) > 0) setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.movementY > 0 ? 1 : -1)))) }}>
 
             {/* CT Scan illustration */}
             <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment(`Measurement placed: ${Math.round(42 * zoom)} mm`) }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
@@ -235,8 +235,8 @@ export function CaseWorkspace() {
                 style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
               >◀</button>
               <input
-                type="range" min={1} max={maxSlice} value={slice}
-onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (next / maxSlice) * 3.5) }}
+type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
+			 onChange={e => setZoom(1 + (+e.target.value / 100))}
               className="flex-1"
                 style={{ accentColor: '#1D4ED8' }}
               />
@@ -246,7 +246,7 @@ onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (ne
                 style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
               >▶</button>
               <span className="text-xs" style={{ color: '#475569', fontFamily: 'var(--font-mono)', minWidth: 44 }}>
-                {slice} / {maxSlice}
+                {Math.round(zoom * 100)}%
               </span>
             </div>
           </div>
@@ -255,7 +255,7 @@ onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (ne
 
       {/* RIGHT: Info panel */}
       <div
-        className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]"
+        className={`${isFullscreen ? 'hidden' : 'flex'} w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]`}
         style={{ width: '100%', background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}
