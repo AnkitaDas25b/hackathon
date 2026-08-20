@@ -48,14 +48,14 @@ export function PatientRegistration() {
   ]
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-3xl">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => setView('admin-queue')} className="text-sm" style={{ color: '#64748B' }}>← Back</button>
         <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Register Patient</h1>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center mb-8">
+      <div className="flex flex-wrap items-center gap-y-2 mb-8">
         {STEPS.map((s, i) => {
           const done = step > s.n
           const active = step === s.n

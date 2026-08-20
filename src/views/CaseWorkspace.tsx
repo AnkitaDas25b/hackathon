@@ -35,10 +35,10 @@ export function CaseWorkspace() {
   const maxSlice = 48
 
   return (
-    <div className="flex h-full" style={{ height: 'calc(100vh - 52px)' }}>
+    <div className="flex min-w-0 h-full overflow-hidden" style={{ height: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
-        className="flex flex-col shrink-0 overflow-y-auto"
+        className="hidden md:flex flex-col shrink-0 overflow-y-auto"
         style={{ width: 200, borderRight: '1px solid #E2E8F0', background: '#F8FAFC' }}
       >
         <div className="px-3 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)', borderBottom: '1px solid #E2E8F0' }}>
@@ -244,7 +244,7 @@ export function CaseWorkspace() {
 
       {/* RIGHT: Info panel */}
       <div
-        className="flex flex-col shrink-0 overflow-y-auto"
+        className="hidden lg:flex flex-col shrink-0 overflow-y-auto"
         style={{ width: 300, background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}
@@ -396,11 +396,19 @@ export function CaseWorkspace() {
               />
               <div className="grid grid-cols-2 gap-2">
                 <Btn variant="secondary" size="xs" onClick={() => {
-                  const blob = new Blob([JSON.stringify({ patientId: patient.id, patient: patient.name, notes, savedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' })
-                  const url = URL.createObjectURL(blob)
+                  const safe = (value: string) => value.replace(/[\\()]/g, '\\$&').replace(/\n/g, ' ')
+                  const lines = [`Patient: ${patient.name}`, `Patient ID: ${patient.id}`, `Study: ${patient.studyId}`, `Saved: ${new Date().toLocaleString()}`, '', 'Clinical notes:', safe(notes || 'No notes entered.')]
+                  const stream = `BT /F1 12 Tf 54 740 Td ${lines.map((line, index) => `${index ? '0 -22 Td ' : ''}(${safe(line)}) Tj`).join(' ')} ET`
+                  const objects = [`<< /Type /Catalog /Pages 2 0 R >>`, `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>`, `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`, `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`]
+                  let pdf = '%PDF-1.4\n'
+                  const offsets = [0]
+                  objects.forEach((object, index) => { offsets[index + 1] = pdf.length; pdf += `${index + 1} 0 obj\n${object}\nendobj\n` })
+                  const xref = pdf.length
+                  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n `).join('\n')}\ntrailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`
+                  const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }))
                   const link = document.createElement('a')
                   link.href = url
-                  link.download = `${patient.id}-draft.json`
+                  link.download = `${patient.id}-draft.pdf`
                   link.click()
                   URL.revokeObjectURL(url)
                 }}>Save Draft</Btn>
@@ -417,7 +425,7 @@ export function CaseWorkspace() {
                   <Btn variant="ghost" size="xs" className="w-full" onClick={() => { setSelectedPatientId(patient.id); setView('patient-timeline') }}>
                     ◌ View Patient Timeline
                   </Btn>
-                  <Btn variant="danger" size="xs" className="w-full">✓ Complete Case</Btn>
+                  <Btn variant="danger" size="xs" className="w-full" onClick={() => confirmDiagnosis(patient.id)}>✓ Complete Case</Btn>
                 </div>
               </div>
             </div>
@@ -497,7 +505,7 @@ export function CaseWorkspace() {
       </div>
 
       {showImagingRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.6)' }} onClick={() => setShowImagingRequest(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" style={{ background: 'rgba(15,23,42,0.6)' }} onClick={() => setShowImagingRequest(false)}>
           <div className="w-full max-w-md rounded-lg bg-white p-5" onClick={e => e.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between"><div className="font-semibold" style={{ color: '#0F172A' }}>Request Additional Imaging</div><button onClick={() => setShowImagingRequest(false)} style={{ color: '#94A3B8', fontSize: 18 }}>×</button></div>
             {imagingRequested ? <div className="rounded-md p-4 text-center" style={{ background: '#F0FDF4', color: '#166534' }}>Imaging request sent to the radiology queue.</div> : <div className="space-y-3"><textarea rows={4} placeholder="Describe the additional views or images required..." className="w-full resize-none rounded border p-2 text-sm" /><Btn variant="primary" size="sm" className="w-full" onClick={() => setImagingRequested(true)}>Submit Imaging Request</Btn></div>}

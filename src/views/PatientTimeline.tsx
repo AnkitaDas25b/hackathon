@@ -20,7 +20,7 @@ export function PatientTimeline() {
   const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? PATIENTS[0]
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-2xl">
       <div className="flex items-center gap-3 mb-5">
         <button onClick={() => setView('admin-queue')} className="text-sm" style={{ color: '#64748B' }}>← Back</button>
         <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Patient Timeline</h1>
@@ -61,7 +61,7 @@ export function PatientTimeline() {
         />
 
         <div className="space-y-0">
-          {TIMELINE_EVENTS.map((event, i) => {
+          {TIMELINE_EVENTS.filter(event => event.type !== 'completion' || workflow.diagnosisConfirmed.includes(patient.id)).map((event, i) => {
             const cfg = TYPE_CONFIG[event.type]
             return (
               <div key={event.id} className="flex gap-4 relative pb-0">
@@ -121,7 +121,7 @@ export function PatientTimeline() {
         <div className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
           Case Summary
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div>
             <div className="text-xs" style={{ color: '#64748B' }}>Registered</div>
             <div className="text-sm font-semibold" style={{ color: '#0F172A', fontFamily: 'var(--font-mono)' }}>

@@ -159,7 +159,7 @@ export function DoctorAssignment() {
         <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
           All Doctors
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {otherDoctors.map(d => (
             <DoctorCard key={d.id} doctor={d} isRecommended={false} onAssign={handleAssign} />
           ))}
