@@ -65,11 +65,15 @@ export function Login() {
         ]).map(({ role, title, description, capabilities, color, icon }) => {
           const active = hovered === role
           return (
-            <button
+            <div
               key={role}
+              role="button"
+              tabIndex={0}
+              aria-label={`Enter as ${title}`}
               onMouseEnter={() => setHovered(role)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => handleSelect(role)}
+              onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleSelect(role) } }}
               className="text-left rounded-lg transition-all duration-150"
               style={{
                 width: 280, padding: 24,
@@ -100,20 +104,15 @@ export function Login() {
                   </li>
                 ))}
               </ul>
-              <div
-                className="mt-4 text-xs font-semibold flex items-center gap-1.5 justify-center py-2 rounded"
+              <button
+                type="button"
+                aria-label={`Enter as ${title}`}
+                onClick={event => { event.stopPropagation(); handleSelect(role) }}
+                className="mt-4 w-full text-xs font-semibold flex items-center gap-1.5 justify-center py-2 rounded transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={{ background: color, color: '#fff' }}
               >
                 Enter as {title} →
-              </div>
-              {active && false && (
-                <div
-                  className="mt-4 text-xs font-semibold flex items-center gap-1.5 justify-center py-2 rounded"
-                  style={{ background: color, color: '#fff' }}
-                >
-                  Enter as {title} →
-                </div>
-              )}
+              </button>
             </button>
           )
         })}
