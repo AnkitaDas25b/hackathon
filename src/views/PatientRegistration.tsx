@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context'
 import { Btn, Card } from '../components/ui'
+import type { Patient } from '../types'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -12,7 +13,7 @@ const STEPS = [
 ]
 
 export function PatientRegistration() {
-  const { setView } = useApp()
+  const { setView, registerPatient } = useApp()
   const [step, setStep] = useState<Step>(1)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'processing' | 'stored' | 'ai' | 'ready'>('idle')
@@ -48,14 +49,14 @@ export function PatientRegistration() {
   ]
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-3xl">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => setView('admin-queue')} className="text-sm" style={{ color: '#64748B' }}>← Back</button>
         <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Register Patient</h1>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center mb-8">
+      <div className="flex flex-wrap items-center gap-y-2 mb-8">
         {STEPS.map((s, i) => {
           const done = step > s.n
           const active = step === s.n
@@ -94,7 +95,7 @@ export function PatientRegistration() {
             <Field label="Full Name" placeholder="e.g. Ravi Kumar" span2={false} />
             <Field label="Date of Birth" type="date" />
             <Field label="Age" placeholder="45" />
-            <Field label="Sex" type="select" options={['Male', 'Female', 'Other']} />
+            <Field label="Gender" type="select" options={['Male', 'Female', 'Other']} />
             <Field label="Contact Number" placeholder="+91 98765 43210" />
             <Field label="Emergency Contact" placeholder="Name — Relationship — Number" />
             <Field label="Current Complaint" placeholder="Primary reason for visit" span2 />
@@ -260,7 +261,7 @@ export function PatientRegistration() {
                 Patient ID: P-20240812-012 · Study: STU-20240812-NEW
               </div>
               <div className="flex gap-3 justify-center">
-                <Btn variant="primary" size="sm" onClick={() => setView('admin-queue')}>Go to Patient Queue</Btn>
+                <Btn variant="primary" size="sm" onClick={() => { const newPatient: Patient = { id: `p-${Date.now()}`, name: 'New Registered Patient', age: 0, sex: 'M', phone: '', dob: '', symptoms: '', scanReason: 'New imaging order', modality: 'CT', region: 'Brain', priority: 'ROUTINE', aiSummary: 'Awaiting AI analysis', aiFindings: [], aiConfidence: 0, aiReason: '', aiModelVersion: 'v1.4', suggestedSpecialty: 'General Medicine', assignedDoctorId: null, waitingMinutes: 0, status: 'Registered', imagingStatus: 'Processing', aiStatus: 'Pending', studyId: `STU-${Date.now()}` }; registerPatient(newPatient); setView('admin-queue') }}>Go to Patient Queue</Btn>
                 <Btn variant="secondary" size="sm" onClick={() => setStep(1)}>Register Another</Btn>
               </div>
             </div>

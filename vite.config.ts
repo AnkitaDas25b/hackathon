@@ -32,7 +32,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
-      strictPort: true,
+      // Allow Vite to select the next available port during sandbox restarts.
+      // This prevents a stale preview process from crashing the dev server.
+      strictPort: false,
       watch: { ignored: ['**/.figma/**'] },
     },
     preview: {

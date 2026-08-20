@@ -67,11 +67,11 @@ const DOCTOR_NAV: { section: string; items: NavItem[] }[] = [
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
-  const { role, setRole, view, setView } = useApp()
+  const { role, setRole, view, setView, readNotifications } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const nav = role === 'doctor' ? DOCTOR_NAV : role === 'radiologist' ? RADIOLOGIST_NAV : ADMIN_NAV
   const roleLabel = role === 'doctor' ? 'Doctor View' : role === 'radiologist' ? 'Radiologist View' : 'Admin / Reception'
-  const unread = NOTIFICATIONS.filter(n => !n.read && (n.forRole === role || n.forRole === 'both')).length
+  const unread = NOTIFICATIONS.filter(n => !n.read && !readNotifications.includes(n.id) && (n.forRole === role || n.forRole === 'both')).length
 
   return (
     <div className="flex h-full" style={{ background: '#F1F5F9' }}>
@@ -153,17 +153,8 @@ export function Shell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        {/* Bottom: Switch role + logout */}
+        {/* Bottom: logout */}
         <div className="border-t p-3 space-y-1" style={{ borderColor: '#1E293B' }}>
-          <button
-            onClick={() => setView(role === 'doctor' ? 'admin-dashboard' : 'doctor-dashboard')}
-            className="w-full text-xs px-2.5 py-2 rounded text-left transition-colors"
-            style={{ color: '#64748B' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#94A3B8' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#64748B' }}
-          >
-            ⇄ Switch to {role === 'doctor' ? 'Admin' : 'Doctor'} view
-          </button>
           <button
             onClick={() => { setRole(null); setView('login') }}
             className="w-full text-xs px-2.5 py-2 rounded text-left transition-colors"
@@ -198,7 +189,7 @@ export function Shell({ children }: { children: ReactNode }) {
               {getViewTitle(view)}
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setView('notifications')}
               className="relative flex items-center justify-center rounded-full transition-colors"
@@ -216,6 +207,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 </span>
               )}
             </button>
+            <div className="hidden items-center gap-2 sm:flex">
+              <button className="rounded border border-slate-200 px-2 py-1 text-[11px] text-slate-600" onClick={() => { setRole(null); setView('login') }}>Sign out</button>
+            </div>
             <div className="flex items-center gap-2">
               <div
                 className="flex items-center justify-center rounded-full text-white text-xs font-semibold"
@@ -231,6 +225,9 @@ export function Shell({ children }: { children: ReactNode }) {
                   {role === 'doctor' ? 'Neurology' : role === 'radiologist' ? 'Radiology' : 'Admin / Reception'}
                 </div>
               </div>
+            </div>
+            <div className="flex sm:hidden">
+              <button className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-600" onClick={() => { setRole(null); setView('login') }}>Logout</button>
             </div>
           </div>
         </header>

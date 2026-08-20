@@ -27,10 +27,10 @@ export function DoctorDashboard() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-3xl">
       {/* Doctor header */}
       <Card style={{ padding: 16, marginBottom: 20 }}>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div
             className="flex items-center justify-center rounded-full text-white font-bold"
             style={{ width: 44, height: 44, background: '#0891B2', fontSize: 14 }}
@@ -82,7 +82,7 @@ export function DoctorDashboard() {
             <div className="space-y-2">
               {patients.map((p, idx) => (
                 <Card key={p.id} style={{ padding: 0, overflow: 'hidden', borderLeft: `3px solid ${cfg.accent}` }}>
-                  <div className="flex items-center gap-4 px-4 py-3.5">
+                  <div className="flex flex-wrap items-center gap-3 px-3 py-3.5 sm:px-4">
                     {/* Index */}
                     <div
                       className="shrink-0 text-xs font-bold"
@@ -102,7 +102,7 @@ export function DoctorDashboard() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 text-xs" style={{ color: '#64748B' }}>
+                      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: '#64748B' }}>
                         <span>{p.modality} {p.region}</span>
                         <span style={{ color: '#CBD5E1' }}>·</span>
                         <span>{p.aiSummary}</span>

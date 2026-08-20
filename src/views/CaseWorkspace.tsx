@@ -8,20 +8,26 @@ const MY_DOCTOR_ID = 'd1'
 type RightPanel = 'info' | 'ai' | 'notes' | 'feedback'
 
 export function CaseWorkspace() {
-  const { selectedPatientId, setSelectedPatientId, setView } = useApp()
+  const { workflow, selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis, completeCase, viewPreviousScan } = useApp()
   const [rightPanel, setRightPanel] = useState<RightPanel>('ai')
   const [slice, setSlice] = useState(24)
+  const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
-  const [tool, setTool] = useState<'scroll' | 'zoom' | 'pan' | 'measure'>('scroll')
+  const [tool, setTool] = useState<'scroll' | 'measure'>('scroll')
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [notes, setNotes] = useState('')
   const [feedbackState, setFeedbackState] = useState<'idle' | 'disagree-form' | 'submitted'>('idle')
   const [correctFinding, setCorrectFinding] = useState('')
   const [doctorComment, setDoctorComment] = useState('')
   const [showReferralModal, setShowReferralModal] = useState(false)
   const [referralSubmitted, setReferralSubmitted] = useState(false)
+  const [showImagingRequest, setShowImagingRequest] = useState(false)
+  const [imagingRequested, setImagingRequested] = useState(false)
+  const [urgency, setUrgency] = useState<'CRITICAL' | 'WARNING' | 'ROUTINE'>('ROUTINE')
 
-  const myPatients = PATIENTS.filter(p => p.assignedDoctorId === MY_DOCTOR_ID && p.status !== 'Completed')
-  const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? myPatients[0]!
+  const myPatients = PATIENTS.filter(p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && p.status !== 'Completed')
+  const patient = PATIENTS.find(p => p.id === selectedPatientId && (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID) ?? myPatients[0]!
 
   if (!patient) return (
     <div className="flex items-center justify-center h-full" style={{ color: '#94A3B8' }}>
@@ -32,11 +38,11 @@ export function CaseWorkspace() {
   const maxSlice = 48
 
   return (
-    <div className="flex h-full" style={{ height: 'calc(100vh - 52px)' }}>
+    <div className={isFullscreen ? 'fixed inset-0 z-50 flex min-w-0 flex-col overflow-y-auto bg-slate-950 lg:flex-row' : 'flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row'} style={{ minHeight: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
-        className="flex flex-col shrink-0 overflow-y-auto"
-        style={{ width: 200, borderRight: '1px solid #E2E8F0', background: '#F8FAFC' }}
+        className={`${isFullscreen ? 'hidden' : 'flex'} w-full flex-col shrink-0 overflow-y-auto lg:w-[200px] lg:border-r`}
+        style={{ borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}
       >
         <div className="px-3 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)', borderBottom: '1px solid #E2E8F0' }}>
           My Queue
@@ -47,7 +53,7 @@ export function CaseWorkspace() {
           return (
             <button
               key={p.id}
-              onClick={() => setSelectedPatientId(p.id)}
+              onClick={() => { setSelectedPatientId(p.id); setSeries(0); setSlice(24) }}
               className="w-full text-left px-3 py-3 transition-colors"
               style={{
                 background: isActive ? '#fff' : 'transparent',
@@ -75,7 +81,7 @@ export function CaseWorkspace() {
         {/* Viewer toolbar */}
         <div className="flex items-center gap-2 px-4 py-2" style={{ background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           {/* Tools */}
-          {(['scroll', 'zoom', 'pan', 'measure'] as const).map(t => (
+          {(['scroll', 'measure'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTool(t)}
@@ -87,7 +93,7 @@ export function CaseWorkspace() {
                 border: `1px solid ${tool === t ? '#1D4ED8' : '#1E293B'}`,
               }}
             >
-              {t === 'scroll' ? '↕ Scroll' : t === 'zoom' ? '⊕ Zoom' : t === 'pan' ? '⤢ Pan' : '◫ Measure'}
+              {t === 'scroll' ? '↕ Scroll' : '◫ Measure'}
             </button>
           ))}
 
@@ -96,7 +102,7 @@ export function CaseWorkspace() {
           {/* Zoom control */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+              onClick={() => { setZoom(z => Math.max(1, z - 0.25)); setSlice(s => Math.max(1, s - 1)) }}
               className="text-xs px-2 py-1 rounded"
               style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
             >−</button>
@@ -104,7 +110,7 @@ export function CaseWorkspace() {
               {Math.round(zoom * 100)}%
             </span>
             <button
-              onClick={() => setZoom(z => Math.min(4, z + 0.25))}
+              onClick={() => { setZoom(z => Math.min(4, z + 0.25)); setSlice(s => Math.min(maxSlice, s + 1)) }}
               className="text-xs px-2 py-1 rounded"
               style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
             >+</button>
@@ -120,29 +126,35 @@ export function CaseWorkspace() {
 
           {/* Fullscreen */}
           <button
+            type="button"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            onClick={() => setIsFullscreen(current => !current)}
             className="text-xs px-2 py-1 rounded"
             style={{ background: '#1E293B', color: '#64748B', border: '1px solid #334155' }}
           >
-            ⛶
+            {isFullscreen ? '⛶' : '⛶'}
           </button>
         </div>
 
         {/* Scan area */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className={`${isFullscreen ? 'min-h-0' : 'min-h-[420px]'} flex min-w-0 flex-1 overflow-hidden lg:min-h-0`}>
           {/* Series thumbnails */}
           <div
             className="flex flex-col gap-2 p-2 overflow-y-auto"
             style={{ width: 72, background: '#0A0D10', borderRight: '1px solid #1E293B' }}
           >
             {['Series 1\nAxial', 'Series 2\nCoronal', 'Series 3\nSagittal'].map((s, i) => (
-              <div
+              <button
                 key={i}
+                type="button"
+                aria-label={`Select ${s.replace('\n', ' ')}`}
+                onClick={() => { setSeries(i); setSlice(24) }}
                 className="rounded cursor-pointer overflow-hidden"
-                style={{ border: i === 0 ? '1px solid #1D4ED8' : '1px solid #1E293B', aspectRatio: '1' }}
+                style={{ border: i === series ? '1px solid #1D4ED8' : '1px solid #1E293B', aspectRatio: '1' }}
               >
                 <div
                   style={{
-                    background: `radial-gradient(ellipse 65% 80% at 50% 45%, #2a2a2a 0%, #1a1a1a 60%, #0a0a0a 100%)`,
+                    background: `radial-gradient(ellipse ${55 + i * 8}% ${70 + i * 6}% at ${50 + i * 5}% 45%, #2a2a2a 0%, #1a1a1a 60%, #0a0a0a 100%)`,
                     height: '100%',
                     display: 'flex',
                     alignItems: 'flex-end',
@@ -151,15 +163,17 @@ export function CaseWorkspace() {
                 >
                   <span style={{ color: '#475569', fontSize: 8, fontFamily: 'var(--font-mono)', whiteSpace: 'pre-line', lineHeight: 1.2 }}>{s}</span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
           {/* Main scan viewport */}
-          <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }} onPointerMove={e => { if (tool === 'scroll' && e.buttons === 1 && Math.abs(e.movementY) > 0) setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.movementY > 0 ? 1 : -1)))) }}>
+
             {/* CT Scan illustration */}
-            <div style={{ transform: `scale(${zoom})`, transition: 'transform 0.1s', position: 'relative' }}>
-              <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block' }}>
+            <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment(`Measurement placed: ${Math.round(42 * zoom)} mm`) }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
+
+              <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block', maxWidth: 'min(380px, 78vw)', height: 'auto' }}>
                 {/* Outer skull */}
                 <ellipse cx="190" cy="185" rx="155" ry="165" fill="none" stroke="#C8C8C8" strokeWidth="12" />
                 {/* Skull interior (bone) */}
@@ -190,7 +204,7 @@ export function CaseWorkspace() {
                 <text x="340" y="191" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace" fontWeight="bold">AI: 94%</text>
                 {/* Overlay info */}
                 <text x="8" y="18" fill="#4A6070" fontSize="9" fontFamily="monospace">CT BRAIN</text>
-                <text x="8" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace">AXIAL</text>
+                <text x="8" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace">{series === 0 ? 'AXIAL' : series === 1 ? 'CORONAL' : 'SAGITTAL'}</text>
                 <text x="8" y="364" fill="#4A6070" fontSize="9" fontFamily="monospace">WW:80 WL:40</text>
                 <text x="340" y="18" fill="#4A6070" fontSize="9" fontFamily="monospace" textAnchor="end">STU-001</text>
                 <text x="340" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace" textAnchor="end">1.5T</text>
@@ -221,9 +235,9 @@ export function CaseWorkspace() {
                 style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
               >◀</button>
               <input
-                type="range" min={1} max={maxSlice} value={slice}
-                onChange={e => setSlice(+e.target.value)}
-                className="flex-1"
+type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
+			 onChange={e => setZoom(1 + (+e.target.value / 100))}
+              className="flex-1"
                 style={{ accentColor: '#1D4ED8' }}
               />
               <button
@@ -232,7 +246,7 @@ export function CaseWorkspace() {
                 style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
               >▶</button>
               <span className="text-xs" style={{ color: '#475569', fontFamily: 'var(--font-mono)', minWidth: 44 }}>
-                {slice} / {maxSlice}
+                {Math.round(zoom * 100)}%
               </span>
             </div>
           </div>
@@ -241,8 +255,8 @@ export function CaseWorkspace() {
 
       {/* RIGHT: Info panel */}
       <div
-        className="flex flex-col shrink-0 overflow-y-auto"
-        style={{ width: 300, background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
+        className={`${isFullscreen ? 'hidden' : 'flex'} w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]`}
+        style={{ width: '100%', background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}
         <div className="flex" style={{ borderBottom: '1px solid #E2E8F0' }}>
@@ -392,8 +406,24 @@ export function CaseWorkspace() {
                 style={{ padding: 10, borderRadius: 4, border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#0F172A', lineHeight: 1.6 }}
               />
               <div className="grid grid-cols-2 gap-2">
-                <Btn variant="secondary" size="xs">Save Draft</Btn>
-                <Btn variant="primary" size="xs">Confirm Diagnosis</Btn>
+                <Btn variant="secondary" size="xs" onClick={() => {
+                  const safe = (value: string) => value.replace(/[\\()]/g, '\\$&').replace(/\n/g, ' ')
+                  const lines = [`Patient: ${patient.name}`, `Patient ID: ${patient.id}`, `Study: ${patient.studyId}`, `Saved: ${new Date().toLocaleString()}`, '', 'Clinical notes:', safe(notes || 'No notes entered.')]
+                  const stream = `BT /F1 12 Tf 54 740 Td ${lines.map((line, index) => `${index ? '0 -22 Td ' : ''}(${safe(line)}) Tj`).join(' ')} ET`
+                  const objects = [`<< /Type /Catalog /Pages 2 0 R >>`, `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>`, `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`, `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`]
+                  let pdf = '%PDF-1.4\n'
+                  const offsets = [0]
+                  objects.forEach((object, index) => { offsets[index + 1] = pdf.length; pdf += `${index + 1} 0 obj\n${object}\nendobj\n` })
+                  const xref = pdf.length
+                  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.slice(1).map(offset => `${String(offset).padStart(10, '0')} 00000 n `).join('\n')}\ntrailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`
+                  const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }))
+                  const link = document.createElement('a')
+                  link.href = url
+                  link.download = `${patient.id}-draft.pdf`
+                  link.click()
+                  URL.revokeObjectURL(url)
+                }}>Save Draft</Btn>
+                <Btn variant="primary" size="xs" onClick={() => confirmDiagnosis(patient.id)}>Confirm Diagnosis</Btn>
               </div>
               <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 12 }}>
                 <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
@@ -401,12 +431,12 @@ export function CaseWorkspace() {
                 </div>
                 <div className="space-y-1.5">
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowReferralModal(true)}>→ Refer Patient</Btn>
-                  <Btn variant="outline" size="xs" className="w-full">+ Request Additional Imaging</Btn>
-                  <Btn variant="outline" size="xs" className="w-full">▤ View Previous Scans</Btn>
+                  <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowImagingRequest(true)}>+ Request Additional Imaging</Btn>
+                  <Btn variant="outline" size="xs" className="w-full" onClick={() => { viewPreviousScan(patient.id); setSlice(1) }}>▤ View Previous Scans</Btn>
                   <Btn variant="ghost" size="xs" className="w-full" onClick={() => { setSelectedPatientId(patient.id); setView('patient-timeline') }}>
                     ◌ View Patient Timeline
                   </Btn>
-                  <Btn variant="danger" size="xs" className="w-full">✓ Complete Case</Btn>
+                  <Btn variant="danger" size="xs" className="w-full" onClick={() => { completeCase(patient.id); setView('patient-timeline') }}>✓ Complete Case</Btn>
                 </div>
               </div>
             </div>
@@ -485,6 +515,15 @@ export function CaseWorkspace() {
         </div>
       </div>
 
+      {showImagingRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" style={{ background: 'rgba(15,23,42,0.6)' }} onClick={() => setShowImagingRequest(false)}>
+          <div className="w-full max-w-md rounded-lg bg-white p-5" onClick={e => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between"><div className="font-semibold" style={{ color: '#0F172A' }}>Request Additional Imaging</div><button onClick={() => setShowImagingRequest(false)} style={{ color: '#94A3B8', fontSize: 18 }}>×</button></div>
+            {imagingRequested ? <div className="rounded-md p-4 text-center" style={{ background: '#F0FDF4', color: '#166534' }}>Imaging request sent to the radiology queue.</div> : <div className="space-y-3"><textarea rows={4} placeholder="Describe the additional views or images required..." className="w-full resize-none rounded border p-2 text-sm" /><Btn variant="primary" size="sm" className="w-full" onClick={() => setImagingRequested(true)}>Submit Imaging Request</Btn></div>}
+          </div>
+        </div>
+      )}
+
       {/* Referral modal */}
       {showReferralModal && (
         <div
@@ -528,13 +567,14 @@ export function CaseWorkspace() {
                   <label className="text-xs font-medium block mb-1" style={{ color: '#475569' }}>Urgency</label>
                   <div className="flex gap-2">
                     {(['CRITICAL', 'WARNING', 'ROUTINE'] as const).map(u => (
-                      <button key={u} className="text-xs px-3 py-1.5 rounded-sm" style={{ border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569' }}>
+                      <button key={u} type="button" onClick={() => setUrgency(u)} className="text-xs px-3 py-1.5 rounded-sm" style={{ border: `1px solid ${urgency === u ? '#1D4ED8' : '#E2E8F0'}`, background: urgency === u ? '#EFF6FF' : '#F8FAFC', color: urgency === u ? '#1D4ED8' : '#475569' }}>
                         {u}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className="text-xs p-2.5 rounded-sm" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1D4ED8' }}>
+                  Selected urgency: {urgency}
                   Original imaging study will be shared. No duplication of DICOM data.
                 </div>
                 <div className="flex gap-2 pt-1">
