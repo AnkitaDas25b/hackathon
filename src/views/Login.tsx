@@ -113,7 +113,7 @@ export function Login() {
               >
                 Enter as {title} →
               </button>
-            </button>
+            </div>
           )
         })}
       </div>
