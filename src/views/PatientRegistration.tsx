@@ -94,7 +94,7 @@ export function PatientRegistration() {
             <Field label="Full Name" placeholder="e.g. Ravi Kumar" span2={false} />
             <Field label="Date of Birth" type="date" />
             <Field label="Age" placeholder="45" />
-            <Field label="Sex" type="select" options={['Male', 'Female', 'Other']} />
+            <Field label="Gender" type="select" options={['Male', 'Female', 'Other']} />
             <Field label="Contact Number" placeholder="+91 98765 43210" />
             <Field label="Emergency Contact" placeholder="Name — Relationship — Number" />
             <Field label="Current Complaint" placeholder="Primary reason for visit" span2 />

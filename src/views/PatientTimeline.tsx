@@ -16,7 +16,7 @@ const TYPE_CONFIG: Record<TimelineEvent['type'], { color: string; icon: string; 
 }
 
 export function PatientTimeline() {
-  const { selectedPatientId, setView } = useApp()
+  const { selectedPatientId, setView, workflow } = useApp()
   const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? PATIENTS[0]
 
   return (
@@ -135,9 +135,9 @@ export function PatientTimeline() {
             </div>
           </div>
           <div>
-            <div className="text-xs" style={{ color: '#64748B' }}>Completed</div>
+            <div className="text-xs" style={{ color: '#64748B' }}>{workflow.diagnosisConfirmed.includes(patient.id) ? 'Completed' : 'Status'}</div>
             <div className="text-sm font-semibold" style={{ color: '#0F172A', fontFamily: 'var(--font-mono)' }}>
-              {TIMELINE_EVENTS[TIMELINE_EVENTS.length - 1].time}
+              {workflow.diagnosisConfirmed.includes(patient.id) ? TIMELINE_EVENTS[TIMELINE_EVENTS.length - 1].time : 'In progress'}
             </div>
           </div>
           <div>

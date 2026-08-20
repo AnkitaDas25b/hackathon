@@ -8,7 +8,7 @@ const MY_DOCTOR_ID = 'd1'
 type RightPanel = 'info' | 'ai' | 'notes' | 'feedback'
 
 export function CaseWorkspace() {
-  const { selectedPatientId, setSelectedPatientId, setView } = useApp()
+  const { selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis } = useApp()
   const [rightPanel, setRightPanel] = useState<RightPanel>('ai')
   const [slice, setSlice] = useState(24)
   const [zoom, setZoom] = useState(1)
@@ -19,6 +19,9 @@ export function CaseWorkspace() {
   const [doctorComment, setDoctorComment] = useState('')
   const [showReferralModal, setShowReferralModal] = useState(false)
   const [referralSubmitted, setReferralSubmitted] = useState(false)
+  const [showImagingRequest, setShowImagingRequest] = useState(false)
+  const [imagingRequested, setImagingRequested] = useState(false)
+  const [urgency, setUrgency] = useState<'CRITICAL' | 'WARNING' | 'ROUTINE'>('ROUTINE')
 
   const myPatients = PATIENTS.filter(p => p.assignedDoctorId === MY_DOCTOR_ID && p.status !== 'Completed')
   const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? myPatients[0]!
@@ -392,8 +395,16 @@ export function CaseWorkspace() {
                 style={{ padding: 10, borderRadius: 4, border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#0F172A', lineHeight: 1.6 }}
               />
               <div className="grid grid-cols-2 gap-2">
-                <Btn variant="secondary" size="xs">Save Draft</Btn>
-                <Btn variant="primary" size="xs">Confirm Diagnosis</Btn>
+                <Btn variant="secondary" size="xs" onClick={() => {
+                  const blob = new Blob([JSON.stringify({ patientId: patient.id, patient: patient.name, notes, savedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' })
+                  const url = URL.createObjectURL(blob)
+                  const link = document.createElement('a')
+                  link.href = url
+                  link.download = `${patient.id}-draft.json`
+                  link.click()
+                  URL.revokeObjectURL(url)
+                }}>Save Draft</Btn>
+                <Btn variant="primary" size="xs" onClick={() => confirmDiagnosis(patient.id)}>Confirm Diagnosis</Btn>
               </div>
               <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 12 }}>
                 <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
@@ -401,7 +412,7 @@ export function CaseWorkspace() {
                 </div>
                 <div className="space-y-1.5">
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowReferralModal(true)}>→ Refer Patient</Btn>
-                  <Btn variant="outline" size="xs" className="w-full">+ Request Additional Imaging</Btn>
+                  <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowImagingRequest(true)}>+ Request Additional Imaging</Btn>
                   <Btn variant="outline" size="xs" className="w-full">▤ View Previous Scans</Btn>
                   <Btn variant="ghost" size="xs" className="w-full" onClick={() => { setSelectedPatientId(patient.id); setView('patient-timeline') }}>
                     ◌ View Patient Timeline
@@ -485,6 +496,15 @@ export function CaseWorkspace() {
         </div>
       </div>
 
+      {showImagingRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.6)' }} onClick={() => setShowImagingRequest(false)}>
+          <div className="w-full max-w-md rounded-lg bg-white p-5" onClick={e => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between"><div className="font-semibold" style={{ color: '#0F172A' }}>Request Additional Imaging</div><button onClick={() => setShowImagingRequest(false)} style={{ color: '#94A3B8', fontSize: 18 }}>×</button></div>
+            {imagingRequested ? <div className="rounded-md p-4 text-center" style={{ background: '#F0FDF4', color: '#166534' }}>Imaging request sent to the radiology queue.</div> : <div className="space-y-3"><textarea rows={4} placeholder="Describe the additional views or images required..." className="w-full resize-none rounded border p-2 text-sm" /><Btn variant="primary" size="sm" className="w-full" onClick={() => setImagingRequested(true)}>Submit Imaging Request</Btn></div>}
+          </div>
+        </div>
+      )}
+
       {/* Referral modal */}
       {showReferralModal && (
         <div
@@ -528,13 +548,14 @@ export function CaseWorkspace() {
                   <label className="text-xs font-medium block mb-1" style={{ color: '#475569' }}>Urgency</label>
                   <div className="flex gap-2">
                     {(['CRITICAL', 'WARNING', 'ROUTINE'] as const).map(u => (
-                      <button key={u} className="text-xs px-3 py-1.5 rounded-sm" style={{ border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#475569' }}>
+                      <button key={u} type="button" onClick={() => setUrgency(u)} className="text-xs px-3 py-1.5 rounded-sm" style={{ border: `1px solid ${urgency === u ? '#1D4ED8' : '#E2E8F0'}`, background: urgency === u ? '#EFF6FF' : '#F8FAFC', color: urgency === u ? '#1D4ED8' : '#475569' }}>
                         {u}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className="text-xs p-2.5 rounded-sm" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1D4ED8' }}>
+                  Selected urgency: {urgency}
                   Original imaging study will be shared. No duplication of DICOM data.
                 </div>
                 <div className="flex gap-2 pt-1">
