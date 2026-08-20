@@ -37,7 +37,7 @@ export function CompletedCases() {
         <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-sm">
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #F1F5F9' }}>
-              {['Patient', 'Imaging', 'Priority', 'Diagnosis', 'Doctor', 'Completed', 'Duration', 'AI Agreement'].map(h => (
+              {['Patient', 'Imaging', 'Priority', 'Diagnosis', 'Doctor', 'Duration', 'AI Agreement'].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
                   {h}
                 </th>
@@ -67,7 +67,6 @@ export function CompletedCases() {
                   <div className="text-xs max-w-48 leading-relaxed" style={{ color: '#475569' }}>{c.diagnosis}</div>
                 </td>
                 <td className="px-5 py-3.5 text-xs" style={{ color: '#475569' }}>{c.assignedDoctor}</td>
-                <td className="px-5 py-3.5 text-xs" style={{ color: '#FFFFFF', fontFamily: 'var(--font-mono)' }}>{c.completedAt}</td>
                 <td className="px-5 py-3.5 text-xs" style={{ color: '#FFFFFF', fontFamily: 'var(--font-mono)' }}>{c.duration}</td>
                 <td className="px-5 py-3.5">
                   {c.aiAgreement === 'agreed' ? (

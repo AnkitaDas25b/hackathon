@@ -36,7 +36,7 @@ export function CaseWorkspace() {
   const maxSlice = 48
 
   return (
-    <div className="flex min-w-0 h-full overflow-hidden" style={{ height: 'calc(100vh - 52px)' }}>
+    <div className="flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row" style={{ minHeight: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
         className="hidden md:flex flex-col shrink-0 overflow-y-auto"
@@ -132,7 +132,7 @@ export function CaseWorkspace() {
         </div>
 
         {/* Scan area */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex min-h-[420px] min-w-0 flex-1 overflow-hidden lg:min-h-0">
           {/* Series thumbnails */}
           <div
             className="flex flex-col gap-2 p-2 overflow-y-auto"
@@ -163,12 +163,12 @@ export function CaseWorkspace() {
           </div>
 
           {/* Main scan viewport */}
-          <div className="flex-1 flex items-center justify-center relative overflow-hidden" onWheel={e => { if (tool === 'scroll') setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))); if (tool === 'zoom') setZoom(z => Math.min(4, Math.max(0.5, z + (e.deltaY > 0 ? -0.1 : 0.1)))) }}>
+          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); if (tool === 'scroll') setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))); if (tool === 'zoom') setZoom(z => Math.min(4, Math.max(0.5, z + (e.deltaY > 0 ? -0.1 : 0.1)))) }}>
 
             {/* CT Scan illustration */}
             <div style={{ transform: `translate(${tool === 'pan' ? 18 : 0}px, ${tool === 'pan' ? -12 : 0}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment('Measurement placed: 42 mm') }}>
 
-              <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block' }}>
+              <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block', maxWidth: 'min(380px, 78vw)', height: 'auto' }}>
                 {/* Outer skull */}
                 <ellipse cx="190" cy="185" rx="155" ry="165" fill="none" stroke="#C8C8C8" strokeWidth="12" />
                 {/* Skull interior (bone) */}
@@ -231,7 +231,7 @@ export function CaseWorkspace() {
               >◀</button>
               <input
                 type="range" min={1} max={maxSlice} value={slice}
-onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (next / maxSlice) * 3.5) }}
+onChange={e => { const next = +e.target.value; setSlice(next); if (tool === 'zoom') setZoom(0.5 + (next / maxSlice) * 3.5) }}
               className="flex-1"
                 style={{ accentColor: '#1D4ED8' }}
               />
@@ -250,7 +250,7 @@ onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (ne
 
       {/* RIGHT: Info panel */}
       <div
-        className="hidden lg:flex flex-col shrink-0 overflow-y-auto"
+        className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]"
         style={{ width: 300, background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}

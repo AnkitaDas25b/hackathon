@@ -69,7 +69,7 @@ export function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
         {/* Urgent patients */}
         <div className="col-span-3">
           <div className="flex items-center justify-between mb-3">
@@ -175,7 +175,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Quick actions */}
-      <div className="mt-5 flex gap-3">
+      <div className="mt-5 flex flex-wrap gap-3">
         <Btn variant="primary" size="sm" onClick={() => setView('admin-registration')}>+ Register Patient</Btn>
         <Btn variant="outline" size="sm" onClick={() => setView('admin-queue')}>View Patient Queue</Btn>
         <Btn variant="outline" size="sm" onClick={() => setView('admin-referrals')}>Referral Queue ({REFERRALS.filter(r => r.status === 'Pending').length})</Btn>

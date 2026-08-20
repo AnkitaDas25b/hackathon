@@ -11,7 +11,7 @@ export function RadiologistDashboard() {
   const reviewed = workflow.radiologistReviewed.includes(patient.id)
   const uploaded = workflow.uploadedStudies.includes(patient.id)
 
-  return <div className="p-3 sm:p-6">
+  return <div className="min-w-0 p-3 sm:p-6">
     <div className="mb-5"><h1 className="text-lg font-semibold text-slate-900">Radiology Queue</h1><p className="text-sm text-slate-500">Review ordered studies and upload the associated patient files.</p></div>
     <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
       <Card style={{ padding: 16 }}><div className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Studies awaiting review</div><div className="flex flex-col gap-2">{pending.map(p => <button key={p.id} onClick={() => setSelected(p.id)} className={`rounded-md border p-3 text-left ${selected === p.id ? 'border-blue-600 bg-blue-50' : 'border-slate-200 bg-white'}`}><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-900">{p.name}</span><PriorityBadge priority={p.priority} size="xs" /></div><div className="mt-1 text-xs text-slate-500">{p.modality} · {p.region} · {p.studyId}</div><div className="mt-2"><ImagingStatusBadge status={p.imagingStatus} /></div></button>)}</div></Card>
