@@ -40,8 +40,8 @@ export function CaseWorkspace() {
     <div className="flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row" style={{ minHeight: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
-        className="hidden md:flex flex-col shrink-0 overflow-y-auto"
-        style={{ width: 200, borderRight: '1px solid #E2E8F0', background: '#F8FAFC' }}
+        className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[200px] lg:border-r"
+        style={{ borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}
       >
         <div className="px-3 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)', borderBottom: '1px solid #E2E8F0' }}>
           My Queue
