@@ -109,10 +109,11 @@ export type View =
   | 'admin-assignment'
   | 'admin-referrals'
   | 'admin-model-monitoring'
+  | 'radiologist-dashboard'
   | 'doctor-dashboard'
   | 'doctor-case'
   | 'patient-timeline'
   | 'notifications'
   | 'completed-cases'
 
-export type Role = 'admin' | 'doctor'
+export type Role = 'admin' | 'doctor' | 'radiologist'

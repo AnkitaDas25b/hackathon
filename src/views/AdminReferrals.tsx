@@ -9,7 +9,7 @@ export function AdminReferrals() {
   const [expandedReferral, setExpandedReferral] = useState<string | null>(REFERRALS[1].id)
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-5xl">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Referral Queue</h1>
@@ -78,7 +78,7 @@ export function AdminReferrals() {
               {/* Expanded */}
               {isExpanded && (
                 <div style={{ borderTop: '1px solid #E2E8F0' }}>
-                  <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2" style={{ gap: 0 }}>
                     {/* Referral details */}
                     <div className="p-5" style={{ borderRight: '1px solid #E2E8F0' }}>
                       <div className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { useApp } from '../context'
 import type { View } from '../types'
 import { NOTIFICATIONS } from '../data/mock'
@@ -37,6 +38,11 @@ const ADMIN_NAV: { section: string; items: NavItem[] }[] = [
   },
 ]
 
+const RADIOLOGIST_NAV: { section: string; items: NavItem[] }[] = [
+  { section: 'Imaging Work', items: [{ label: 'Radiology Queue', view: 'radiologist-dashboard', icon: '◉' }] },
+  { section: 'Account', items: [{ label: 'Notifications', view: 'notifications', icon: '◉' }, { label: 'Completed Cases', view: 'completed-cases', icon: '✓' }] },
+]
+
 const DOCTOR_NAV: { section: string; items: NavItem[] }[] = [
   {
     section: 'My Work',
@@ -62,14 +68,16 @@ const DOCTOR_NAV: { section: string; items: NavItem[] }[] = [
 
 export function Shell({ children }: { children: ReactNode }) {
   const { role, setRole, view, setView } = useApp()
-  const nav = role === 'doctor' ? DOCTOR_NAV : ADMIN_NAV
+  const [menuOpen, setMenuOpen] = useState(false)
+  const nav = role === 'doctor' ? DOCTOR_NAV : role === 'radiologist' ? RADIOLOGIST_NAV : ADMIN_NAV
+  const roleLabel = role === 'doctor' ? 'Doctor View' : role === 'radiologist' ? 'Radiologist View' : 'Admin / Reception'
   const unread = NOTIFICATIONS.filter(n => !n.read && (n.forRole === role || n.forRole === 'both')).length
 
   return (
     <div className="flex h-full" style={{ background: '#F1F5F9' }}>
       {/* Sidebar */}
       <aside
-        className="flex flex-col shrink-0"
+        className="hidden md:flex flex-col shrink-0"
         style={{ width: 232, background: '#0F172A', borderRight: '1px solid #1E293B' }}
       >
         {/* Logo */}
@@ -98,7 +106,7 @@ export function Shell({ children }: { children: ReactNode }) {
               className="inline-block rounded-full"
               style={{ width: 6, height: 6, background: role === 'doctor' ? '#16A34A' : '#1D4ED8' }}
             />
-            {role === 'doctor' ? 'Doctor View' : 'Admin / Reception'}
+            {roleLabel}
           </div>
         </div>
 
@@ -168,14 +176,24 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
+      {/* Mobile navigation */}
+      <div className={`md:hidden fixed inset-0 z-40 ${menuOpen ? 'block' : 'hidden'}`}>
+        <button aria-label="Close navigation" className="absolute inset-0 bg-slate-950/40" onClick={() => setMenuOpen(false)} />
+        <aside className="relative flex h-full w-72 max-w-[85vw] flex-col bg-[#0F172A] shadow-xl">
+          <div className="flex items-center justify-between border-b border-[#1E293B] px-5 py-5"><span className="text-sm font-semibold text-white">MediTriage</span><button aria-label="Close menu" className="text-xl text-slate-400" onClick={() => setMenuOpen(false)}>×</button></div>
+          <nav className="flex-1 overflow-y-auto px-3 py-3">{nav.map(({ section, items }) => <div key={section} className="mb-4"><div className="px-2 mb-1 text-[9px] font-semibold uppercase tracking-widest text-slate-600">{section}</div>{items.map(item => <button key={item.view} onClick={() => { setView(item.view); setMenuOpen(false) }} className={`flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left text-sm ${view === item.view ? 'bg-blue-700 text-white' : 'text-slate-400'}`}><span>{item.icon}</span><span>{item.label}</span></button>)}</div>)}</nav>
+        </aside>
+      </div>
+
       {/* Main area */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Top bar */}
         <header
-          className="flex items-center justify-between px-6 shrink-0"
+          className="flex min-w-0 items-center justify-between px-3 sm:px-6 shrink-0"
           style={{ height: 52, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0' }}
         >
           <div className="flex items-center gap-2">
+            <button aria-label="Open navigation" className="mr-1 rounded p-1 text-lg text-slate-600 md:hidden" onClick={() => setMenuOpen(true)}>☰</button>
             <span className="text-sm font-medium" style={{ color: '#0F172A' }}>
               {getViewTitle(view)}
             </span>
@@ -207,10 +225,10 @@ export function Shell({ children }: { children: ReactNode }) {
               </div>
               <div className="text-right">
                 <div className="text-xs font-medium" style={{ color: '#0F172A' }}>
-                  {role === 'doctor' ? 'Dr. Arjun Rao' : 'Priya Mehta'}
+                  {role === 'doctor' ? 'Dr. Arjun Rao' : role === 'radiologist' ? 'Dr. Nisha Kapoor' : 'Priya Mehta'}
                 </div>
                 <div className="text-xs" style={{ color: '#64748B' }}>
-                  {role === 'doctor' ? 'Neurology' : 'Admin / Reception'}
+                  {role === 'doctor' ? 'Neurology' : role === 'radiologist' ? 'Radiology' : 'Admin / Reception'}
                 </div>
               </div>
             </div>
@@ -235,6 +253,7 @@ function getViewTitle(view: View): string {
     'admin-assignment': 'Doctor Assignment',
     'admin-referrals': 'Referral Queue',
     'admin-model-monitoring': 'AI Model Monitoring',
+    'radiologist-dashboard': 'Radiology Queue',
     'doctor-dashboard': 'My Patient Queue',
     'doctor-case': 'Case Workspace',
     'patient-timeline': 'Patient Timeline',

@@ -4,7 +4,7 @@ import { PATIENTS, DOCTORS } from '../data/mock'
 import { PriorityBadge, AvailabilityDot, Btn, Card } from '../components/ui'
 
 export function DoctorAssignment() {
-  const { selectedPatientId, setSelectedPatientId, setView } = useApp()
+  const { selectedPatientId, setSelectedPatientId, setView, assignConsultant } = useApp()
   const [assigned, setAssigned] = useState<string | null>(null)
 
   const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? PATIENTS.find(p => !p.assignedDoctorId)!
@@ -20,6 +20,7 @@ export function DoctorAssignment() {
   })[0]
 
   const handleAssign = (doctorId: string) => {
+    assignConsultant(patient.id, doctorId)
     setAssigned(doctorId)
   }
 
@@ -48,7 +49,7 @@ export function DoctorAssignment() {
   }
 
   return (
-    <div className="p-6" style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 20, alignItems: 'start' }}>
+    <div className="grid grid-cols-1 gap-5 p-3 sm:p-6 lg:grid-cols-[340px_minmax(0,1fr)]" style={{ alignItems: 'start' }}>
       {/* Left: Patient info + unassigned list */}
       <div className="space-y-4">
         {/* Selected patient */}
@@ -146,7 +147,7 @@ export function DoctorAssignment() {
             <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
               Specialty Match
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2">
               {specialtyDoctors.map(d => (
                 <DoctorCard key={d.id} doctor={d} isRecommended={d.id === recommended?.id} onAssign={handleAssign} />
               ))}
