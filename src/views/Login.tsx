@@ -8,7 +8,7 @@ export function Login() {
 
   const handleSelect = (role: Role) => {
     setRole(role)
-    setView(role === 'admin' ? 'admin-dashboard' : 'doctor-dashboard')
+    setView(role === 'admin' ? 'admin-dashboard' : role === 'radiologist' ? 'radiologist-dashboard' : 'doctor-dashboard')
   }
 
   return (
@@ -36,7 +36,7 @@ export function Login() {
       </div>
 
       {/* Role cards */}
-      <div className="flex gap-5 mb-10">
+      <div className="flex w-full max-w-xl flex-col gap-5 px-4 mb-10 sm:flex-row">
         {([
           {
             role: 'admin' as Role,
@@ -45,6 +45,14 @@ export function Login() {
             capabilities: ['Patient registration', 'Doctor assignment', 'Referral management', 'Workflow oversight'],
             color: '#1D4ED8',
             icon: '⊞',
+          },
+          {
+            role: 'radiologist' as Role,
+            title: 'Radiologist',
+            description: 'Review ordered studies, assess report severity, and upload imaging files for consultant review.',
+            capabilities: ['Study review', 'Report severity', 'DICOM upload', 'Consultant handoff'],
+            color: '#7C3AED',
+            icon: '◉',
           },
           {
             role: 'doctor' as Role,

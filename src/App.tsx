@@ -12,6 +12,7 @@ import { CaseWorkspace } from './views/CaseWorkspace'
 import { PatientTimeline } from './views/PatientTimeline'
 import { NotificationsView } from './views/Notifications'
 import { CompletedCases } from './views/CompletedCases'
+import { RadiologistDashboard } from './views/RadiologistDashboard'
 
 function ViewRouter() {
   const { view } = useApp()
@@ -22,6 +23,7 @@ function ViewRouter() {
     case 'admin-assignment':    return <DoctorAssignment />
     case 'admin-referrals':     return <AdminReferrals />
     case 'admin-model-monitoring': return <ModelMonitoring />
+    case 'radiologist-dashboard': return <RadiologistDashboard />
     case 'doctor-dashboard':    return <DoctorDashboard />
     case 'doctor-case':         return <CaseWorkspace />
     case 'patient-timeline':    return <PatientTimeline />

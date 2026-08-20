@@ -54,9 +54,9 @@ export function PatientQueue() {
   })
 
   return (
-    <div className="p-6">
+    <div className="min-w-0 p-3 sm:p-6">
       {/* Header row */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Patient Queue</h1>
           <p className="text-sm" style={{ color: '#64748B' }}>{filtered.length} of {PATIENTS.filter(p => p.status !== 'Completed').length} patients</p>
@@ -124,8 +124,9 @@ export function PatientQueue() {
       </Card>
 
       {/* Table */}
-      <Card>
-        <table className="w-full text-sm">
+      <Card style={{ overflow: 'hidden' }}>
+        <div className="w-full overflow-x-auto">
+        <table className="min-w-[1180px] w-full text-sm">
           <thead>
             <tr style={{ borderBottom: '2px solid #F1F5F9' }}>
               {['Patient', 'Age/Sex', 'Imaging Test', 'Study Status', 'AI Priority', 'AI Finding', 'Specialty', 'Assigned Doctor', 'Waiting', 'Status', ''].map(h => (
@@ -207,6 +208,7 @@ export function PatientQueue() {
             })}
           </tbody>
         </table>
+        </div>
 
         {filtered.length === 0 && (
           <div className="text-center py-12" style={{ color: '#94A3B8' }}>

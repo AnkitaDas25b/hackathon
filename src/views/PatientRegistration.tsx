@@ -88,7 +88,7 @@ export function PatientRegistration() {
       {step === 1 && (
         <Card style={{ padding: 24 }}>
           <h2 className="text-sm font-semibold mb-5" style={{ color: '#0F172A' }}>Patient Information</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Patient ID" placeholder="Auto-generated or scan barcode" monospace />
             <Field label="Patient Type" type="select" options={['New Patient', 'Existing Patient']} />
             <Field label="Full Name" placeholder="e.g. Ravi Kumar" span2={false} />
@@ -111,7 +111,7 @@ export function PatientRegistration() {
       {step === 2 && (
         <Card style={{ padding: 24 }}>
           <h2 className="text-sm font-semibold mb-5" style={{ color: '#0F172A' }}>Create Imaging Test Order</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Imaging Modality" type="select" options={['CT', 'MRI', 'X-Ray', 'PET', 'Ultrasound']} />
             <Field label="Body Region" type="select" options={['Brain', 'Chest', 'Abdomen & Pelvis', 'Spine (Cervical)', 'Spine (Lumbar)', 'Knee', 'Hip', 'Shoulder', 'Full Body']} />
             <Field label="Reason for Scan" placeholder="Clinical indication" span2 />
@@ -133,10 +133,13 @@ export function PatientRegistration() {
         <Card style={{ padding: 24 }}>
           <h2 className="text-sm font-semibold mb-1" style={{ color: '#0F172A' }}>Imaging Upload / Study Association</h2>
           <p className="text-xs mb-5" style={{ color: '#64748B' }}>
-            Upload the DICOM study or associate an existing study already stored in AWS HealthImaging via your PACS.
+            Imaging files are handled by the radiologist after this test order is submitted.
           </p>
+          <div className="rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+            <strong>Radiologist handoff:</strong> The patient and ordered test will be added to the Radiology Queue. Admins cannot upload or associate report files from this workflow.
+          </div>
 
-          {uploadState === 'idle' && (
+          {false && uploadState === 'idle' && (
             <div className="space-y-4">
               {/* Upload zone */}
               <div
