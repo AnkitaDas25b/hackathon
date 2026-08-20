@@ -6,6 +6,8 @@ export interface WorkflowState {
   uploadedStudies: string[]
   consultantAssignments: Record<string, string>
   diagnosisConfirmed: string[]
+  completedCases: string[]
+  previousScansViewed: string[]
 }
 
 interface AppContextType {
@@ -22,6 +24,8 @@ interface AppContextType {
   markStudyUploaded: (patientId: string) => void
   assignConsultant: (patientId: string, doctorId: string) => void
   confirmDiagnosis: (patientId: string) => void
+  completeCase: (patientId: string) => void
+  viewPreviousScan: (patientId: string) => void
   registeredPatients: Patient[]
   registerPatient: (patient: Patient) => void
   readNotifications: string[]
@@ -32,8 +36,8 @@ const AppContext = createContext<AppContextType>({
   role: null, setRole: () => {}, view: 'login', setView: () => {},
   selectedPatientId: null, setSelectedPatientId: () => {},
   modal: null, setModal: () => {},
-  workflow: { radiologistReviewed: [], uploadedStudies: [], consultantAssignments: {}, diagnosisConfirmed: [] },
-  markRadiologistReviewed: () => {}, markStudyUploaded: () => {}, assignConsultant: () => {},   confirmDiagnosis: () => {}, registeredPatients: [], registerPatient: () => {}, readNotifications: [], markNotificationsRead: () => {},
+  workflow: { radiologistReviewed: [], uploadedStudies: [], consultantAssignments: {}, diagnosisConfirmed: [], completedCases: [], previousScansViewed: [] },
+  markRadiologistReviewed: () => {}, markStudyUploaded: () => {}, assignConsultant: () => {},   confirmDiagnosis: () => {}, completeCase: () => {}, viewPreviousScan: () => {}, registeredPatients: [], registerPatient: () => {}, readNotifications: [], markNotificationsRead: () => {},
 })
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -41,7 +45,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<View>('login')
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>('p1')
   const [modal, setModal] = useState<string | null>(null)
-  const [workflow, setWorkflow] = useState<WorkflowState>(() => JSON.parse(localStorage.getItem('meditriage-workflow') || '{"radiologistReviewed":[],"uploadedStudies":[],"consultantAssignments":{},"diagnosisConfirmed":[]}'))
+  const [workflow, setWorkflow] = useState<WorkflowState>(() => JSON.parse(localStorage.getItem('meditriage-workflow') || '{"radiologistReviewed":[],"uploadedStudies":[],"consultantAssignments":{},"diagnosisConfirmed":[],"completedCases":[],"previousScansViewed":[]}'))
   const [registeredPatients, setRegisteredPatients] = useState<Patient[]>(() => JSON.parse(localStorage.getItem('meditriage-registered-patients') || '[]'))
   const [readNotifications, setReadNotifications] = useState<string[]>(() => JSON.parse(localStorage.getItem('meditriage-read-notifications') || '[]'))
   useEffect(() => { localStorage.setItem('meditriage-workflow', JSON.stringify(workflow)) }, [workflow])
@@ -53,9 +57,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const markRadiologistReviewed = (patientId: string) => setWorkflow(current => ({ ...current, radiologistReviewed: current.radiologistReviewed.includes(patientId) ? current.radiologistReviewed : [...current.radiologistReviewed, patientId] }))
   const markStudyUploaded = (patientId: string) => setWorkflow(current => ({ ...current, uploadedStudies: current.uploadedStudies.includes(patientId) ? current.uploadedStudies : [...current.uploadedStudies, patientId] }))
   const assignConsultant = (patientId: string, doctorId: string) => setWorkflow(current => ({ ...current, consultantAssignments: { ...current.consultantAssignments, [patientId]: doctorId } }))
+  const completeCase = (patientId: string) => setWorkflow(current => ({ ...current, completedCases: current.completedCases.includes(patientId) ? current.completedCases : [...current.completedCases, patientId] }))
+  const viewPreviousScan = (patientId: string) => setWorkflow(current => ({ ...current, previousScansViewed: current.previousScansViewed.includes(patientId) ? current.previousScansViewed : [...current.previousScansViewed, patientId] }))
 
   return (
-    <AppContext.Provider value={{ role, setRole, view, setView, selectedPatientId, setSelectedPatientId, modal, setModal, workflow, markRadiologistReviewed, markStudyUploaded, assignConsultant, confirmDiagnosis, registeredPatients, registerPatient, readNotifications, markNotificationsRead }}>
+    <AppContext.Provider value={{ role, setRole, view, setView, selectedPatientId, setSelectedPatientId, modal, setModal, workflow, markRadiologistReviewed, markStudyUploaded, assignConsultant, confirmDiagnosis, completeCase, viewPreviousScan, registeredPatients, registerPatient, readNotifications, markNotificationsRead }}>
       {children}
     </AppContext.Provider>
   )

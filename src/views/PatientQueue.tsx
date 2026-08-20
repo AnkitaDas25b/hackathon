@@ -8,8 +8,9 @@ type FilterPriority = Priority | 'ALL'
 type FilterAssigned = 'ALL' | 'ASSIGNED' | 'UNASSIGNED'
 
 export function PatientQueue() {
-  const { setView, setSelectedPatientId, registeredPatients } = useApp()
+  const { role, setView, setSelectedPatientId, registeredPatients } = useApp()
   const patients = [...PATIENTS, ...registeredPatients]
+  if (role === 'doctor') return null
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('ALL')
   const [filterAssigned, setFilterAssigned] = useState<FilterAssigned>('ALL')
   const [filterModality, setFilterModality] = useState<string>('ALL')

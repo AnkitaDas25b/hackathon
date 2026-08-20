@@ -153,17 +153,8 @@ export function Shell({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        {/* Bottom: Switch role + logout */}
+        {/* Bottom: logout */}
         <div className="border-t p-3 space-y-1" style={{ borderColor: '#1E293B' }}>
-          <button
-            onClick={() => setView(role === 'doctor' ? 'admin-dashboard' : 'doctor-dashboard')}
-            className="w-full text-xs px-2.5 py-2 rounded text-left transition-colors"
-            style={{ color: '#64748B' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#94A3B8' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#64748B' }}
-          >
-            ⇄ Switch to {role === 'doctor' ? 'Admin' : 'Doctor'} view
-          </button>
           <button
             onClick={() => { setRole(null); setView('login') }}
             className="w-full text-xs px-2.5 py-2 rounded text-left transition-colors"

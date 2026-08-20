@@ -8,13 +8,14 @@ const MY_DOCTOR_ID = 'd1'
 type RightPanel = 'info' | 'ai' | 'notes' | 'feedback'
 
 export function CaseWorkspace() {
-  const { selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis } = useApp()
+  const { workflow, selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis, completeCase, viewPreviousScan } = useApp()
   const [rightPanel, setRightPanel] = useState<RightPanel>('ai')
   const [slice, setSlice] = useState(24)
   const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
-  const [tool, setTool] = useState<'scroll' | 'zoom' | 'pan' | 'measure'>('scroll')
+  const [tool, setTool] = useState<'scroll' | 'measure'>('scroll')
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [notes, setNotes] = useState('')
   const [feedbackState, setFeedbackState] = useState<'idle' | 'disagree-form' | 'submitted'>('idle')
   const [correctFinding, setCorrectFinding] = useState('')
@@ -25,8 +26,8 @@ export function CaseWorkspace() {
   const [imagingRequested, setImagingRequested] = useState(false)
   const [urgency, setUrgency] = useState<'CRITICAL' | 'WARNING' | 'ROUTINE'>('ROUTINE')
 
-  const myPatients = PATIENTS.filter(p => p.assignedDoctorId === MY_DOCTOR_ID && p.status !== 'Completed')
-  const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? myPatients[0]!
+  const myPatients = PATIENTS.filter(p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && p.status !== 'Completed')
+  const patient = PATIENTS.find(p => p.id === selectedPatientId && (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID) ?? myPatients[0]!
 
   if (!patient) return (
     <div className="flex items-center justify-center h-full" style={{ color: '#94A3B8' }}>
@@ -37,7 +38,7 @@ export function CaseWorkspace() {
   const maxSlice = 48
 
   return (
-    <div className="flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row" style={{ minHeight: 'calc(100vh - 52px)' }}>
+    <div className={isFullscreen ? 'fixed inset-0 z-50 flex min-w-0 flex-col overflow-y-auto bg-slate-950 lg:flex-row' : 'flex min-w-0 h-full flex-col overflow-y-auto lg:flex-row'} style={{ minHeight: 'calc(100vh - 52px)' }}>
       {/* LEFT: Queue sidebar */}
       <div
         className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[200px] lg:border-r"
@@ -80,7 +81,7 @@ export function CaseWorkspace() {
         {/* Viewer toolbar */}
         <div className="flex items-center gap-2 px-4 py-2" style={{ background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           {/* Tools */}
-          {(['scroll', 'zoom', 'pan', 'measure'] as const).map(t => (
+          {(['scroll', 'measure'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTool(t)}
@@ -92,7 +93,7 @@ export function CaseWorkspace() {
                 border: `1px solid ${tool === t ? '#1D4ED8' : '#1E293B'}`,
               }}
             >
-              {t === 'scroll' ? '↕ Scroll' : t === 'zoom' ? '⊕ Zoom' : t === 'pan' ? '⤢ Pan' : '◫ Measure'}
+              {t === 'scroll' ? '↕ Scroll' : '◫ Measure'}
             </button>
           ))}
 
@@ -101,7 +102,7 @@ export function CaseWorkspace() {
           {/* Zoom control */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+              onClick={() => { setZoom(z => Math.max(0.5, z - 0.25)); setSlice(s => Math.max(1, s - 1)) }}
               className="text-xs px-2 py-1 rounded"
               style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
             >−</button>
@@ -109,7 +110,7 @@ export function CaseWorkspace() {
               {Math.round(zoom * 100)}%
             </span>
             <button
-              onClick={() => setZoom(z => Math.min(4, z + 0.25))}
+              onClick={() => { setZoom(z => Math.min(4, z + 0.25)); setSlice(s => Math.min(maxSlice, s + 1)) }}
               className="text-xs px-2 py-1 rounded"
               style={{ background: '#1E293B', color: '#94A3B8', border: '1px solid #334155' }}
             >+</button>
@@ -125,10 +126,13 @@ export function CaseWorkspace() {
 
           {/* Fullscreen */}
           <button
+            type="button"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            onClick={() => setIsFullscreen(current => !current)}
             className="text-xs px-2 py-1 rounded"
             style={{ background: '#1E293B', color: '#64748B', border: '1px solid #334155' }}
           >
-            ⛶
+            {isFullscreen ? '⛶' : '⛶'}
           </button>
         </div>
 
@@ -164,10 +168,10 @@ export function CaseWorkspace() {
           </div>
 
           {/* Main scan viewport */}
-          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); if (tool === 'scroll') setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))); if (tool === 'zoom') setZoom(z => Math.min(4, Math.max(0.5, z + (e.deltaY > 0 ? -0.1 : 0.1)))) }}>
+          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }}>
 
             {/* CT Scan illustration */}
-            <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment('Measurement placed: 42 mm') }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
+            <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment(`Measurement placed: ${Math.round(42 * zoom)} mm`) }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
 
               <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block', maxWidth: 'min(380px, 78vw)', height: 'auto' }}>
                 {/* Outer skull */}
@@ -428,11 +432,11 @@ onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (ne
                 <div className="space-y-1.5">
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowReferralModal(true)}>→ Refer Patient</Btn>
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowImagingRequest(true)}>+ Request Additional Imaging</Btn>
-                  <Btn variant="outline" size="xs" className="w-full">▤ View Previous Scans</Btn>
+                  <Btn variant="outline" size="xs" className="w-full" onClick={() => { viewPreviousScan(patient.id); setSlice(1) }}>▤ View Previous Scans</Btn>
                   <Btn variant="ghost" size="xs" className="w-full" onClick={() => { setSelectedPatientId(patient.id); setView('patient-timeline') }}>
                     ◌ View Patient Timeline
                   </Btn>
-                  <Btn variant="danger" size="xs" className="w-full" onClick={() => confirmDiagnosis(patient.id)}>✓ Complete Case</Btn>
+                  <Btn variant="danger" size="xs" className="w-full" onClick={() => { completeCase(patient.id); setView('patient-timeline') }}>✓ Complete Case</Btn>
                 </div>
               </div>
             </div>
