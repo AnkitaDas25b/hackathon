@@ -4,11 +4,11 @@ import { NOTIFICATIONS } from '../data/mock'
 import { Card } from '../components/ui'
 
 export function NotificationsView() {
-  const { role } = useApp()
+  const { role, readNotifications, markNotificationsRead } = useApp()
   const [readAll, setReadAll] = useState(false)
 
   const relevant = NOTIFICATIONS.filter(n => n.forRole === role || n.forRole === 'both')
-  const unread = relevant.filter(n => !n.read && !readAll)
+  const unread = relevant.filter(n => !n.read && !readAll && !readNotifications.includes(n.id))
 
   const typeConfig = {
     critical: { bg: '#FEF2F2', border: '#FECACA', iconBg: '#FEE2E2', icon: '▲', color: '#991B1B', dot: '#DC2626' },
@@ -28,7 +28,7 @@ export function NotificationsView() {
         </div>
         {unread.length > 0 && (
           <button
-            onClick={() => setReadAll(true)}
+            onClick={() => { setReadAll(true); markNotificationsRead(unread.map(n => n.id)) }}
             className="text-xs font-medium"
             style={{ color: '#1D4ED8' }}
           >

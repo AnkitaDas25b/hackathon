@@ -67,11 +67,11 @@ const DOCTOR_NAV: { section: string; items: NavItem[] }[] = [
 ]
 
 export function Shell({ children }: { children: ReactNode }) {
-  const { role, setRole, view, setView } = useApp()
+  const { role, setRole, view, setView, readNotifications } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
   const nav = role === 'doctor' ? DOCTOR_NAV : role === 'radiologist' ? RADIOLOGIST_NAV : ADMIN_NAV
   const roleLabel = role === 'doctor' ? 'Doctor View' : role === 'radiologist' ? 'Radiologist View' : 'Admin / Reception'
-  const unread = NOTIFICATIONS.filter(n => !n.read && (n.forRole === role || n.forRole === 'both')).length
+  const unread = NOTIFICATIONS.filter(n => !n.read && !readNotifications.includes(n.id) && (n.forRole === role || n.forRole === 'both')).length
 
   return (
     <div className="flex h-full" style={{ background: '#F1F5F9' }}>

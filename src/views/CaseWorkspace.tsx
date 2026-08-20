@@ -11,6 +11,7 @@ export function CaseWorkspace() {
   const { selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis } = useApp()
   const [rightPanel, setRightPanel] = useState<RightPanel>('ai')
   const [slice, setSlice] = useState(24)
+  const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
   const [tool, setTool] = useState<'scroll' | 'zoom' | 'pan' | 'measure'>('scroll')
   const [notes, setNotes] = useState('')
@@ -50,7 +51,7 @@ export function CaseWorkspace() {
           return (
             <button
               key={p.id}
-              onClick={() => setSelectedPatientId(p.id)}
+              onClick={() => { setSelectedPatientId(p.id); setSeries(0); setSlice(24) }}
               className="w-full text-left px-3 py-3 transition-colors"
               style={{
                 background: isActive ? '#fff' : 'transparent',
@@ -138,14 +139,17 @@ export function CaseWorkspace() {
             style={{ width: 72, background: '#0A0D10', borderRight: '1px solid #1E293B' }}
           >
             {['Series 1\nAxial', 'Series 2\nCoronal', 'Series 3\nSagittal'].map((s, i) => (
-              <div
+              <button
                 key={i}
+                type="button"
+                aria-label={`Select ${s.replace('\n', ' ')}`}
+                onClick={() => { setSeries(i); setSlice(24) }}
                 className="rounded cursor-pointer overflow-hidden"
-                style={{ border: i === 0 ? '1px solid #1D4ED8' : '1px solid #1E293B', aspectRatio: '1' }}
+                style={{ border: i === series ? '1px solid #1D4ED8' : '1px solid #1E293B', aspectRatio: '1' }}
               >
                 <div
                   style={{
-                    background: `radial-gradient(ellipse 65% 80% at 50% 45%, #2a2a2a 0%, #1a1a1a 60%, #0a0a0a 100%)`,
+                    background: `radial-gradient(ellipse ${55 + i * 8}% ${70 + i * 6}% at ${50 + i * 5}% 45%, #2a2a2a 0%, #1a1a1a 60%, #0a0a0a 100%)`,
                     height: '100%',
                     display: 'flex',
                     alignItems: 'flex-end',
@@ -154,7 +158,7 @@ export function CaseWorkspace() {
                 >
                   <span style={{ color: '#475569', fontSize: 8, fontFamily: 'var(--font-mono)', whiteSpace: 'pre-line', lineHeight: 1.2 }}>{s}</span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -195,7 +199,7 @@ export function CaseWorkspace() {
                 <text x="340" y="191" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace" fontWeight="bold">AI: 94%</text>
                 {/* Overlay info */}
                 <text x="8" y="18" fill="#4A6070" fontSize="9" fontFamily="monospace">CT BRAIN</text>
-                <text x="8" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace">AXIAL</text>
+                <text x="8" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace">{series === 0 ? 'AXIAL' : series === 1 ? 'CORONAL' : 'SAGITTAL'}</text>
                 <text x="8" y="364" fill="#4A6070" fontSize="9" fontFamily="monospace">WW:80 WL:40</text>
                 <text x="340" y="18" fill="#4A6070" fontSize="9" fontFamily="monospace" textAnchor="end">STU-001</text>
                 <text x="340" y="30" fill="#4A6070" fontSize="9" fontFamily="monospace" textAnchor="end">1.5T</text>

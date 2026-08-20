@@ -7,7 +7,7 @@ export function CompletedCases() {
   const disagreed = COMPLETED_CASES.filter(c => c.aiAgreement === 'disagreed').length
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-5xl">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Completed Cases</h1>
@@ -16,7 +16,7 @@ export function CompletedCases() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-3">
         <Card style={{ padding: 16, textAlign: 'center' }}>
           <div className="text-2xl font-bold mb-1" style={{ color: '#0F172A', fontFamily: 'var(--font-mono)' }}>{total}</div>
           <div className="text-xs" style={{ color: '#64748B' }}>Total completed</div>
@@ -33,8 +33,8 @@ export function CompletedCases() {
         </Card>
       </div>
 
-      <Card>
-        <table className="w-full text-sm">
+      <Card style={{ overflow: 'hidden' }}>
+        <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-sm">
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #F1F5F9' }}>
               {['Patient', 'Imaging', 'Priority', 'Diagnosis', 'Doctor', 'Completed', 'Duration', 'AI Agreement'].map(h => (
@@ -67,8 +67,8 @@ export function CompletedCases() {
                   <div className="text-xs max-w-48 leading-relaxed" style={{ color: '#475569' }}>{c.diagnosis}</div>
                 </td>
                 <td className="px-5 py-3.5 text-xs" style={{ color: '#475569' }}>{c.assignedDoctor}</td>
-                <td className="px-5 py-3.5 text-xs" style={{ color: '#64748B', fontFamily: 'var(--font-mono)' }}>{c.completedAt}</td>
-                <td className="px-5 py-3.5 text-xs" style={{ color: '#64748B', fontFamily: 'var(--font-mono)' }}>{c.duration}</td>
+                <td className="px-5 py-3.5 text-xs" style={{ color: '#FFFFFF', fontFamily: 'var(--font-mono)' }}>{c.completedAt}</td>
+                <td className="px-5 py-3.5 text-xs" style={{ color: '#FFFFFF', fontFamily: 'var(--font-mono)' }}>{c.duration}</td>
                 <td className="px-5 py-3.5">
                   {c.aiAgreement === 'agreed' ? (
                     <span className="text-xs px-2 py-0.5 rounded-sm" style={{ background: '#F0FDF4', color: '#15803D', fontFamily: 'var(--font-mono)' }}>✓ Agreed</span>
@@ -81,7 +81,7 @@ export function CompletedCases() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Card>
     </div>
   )
