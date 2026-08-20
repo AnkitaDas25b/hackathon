@@ -159,9 +159,11 @@ export function CaseWorkspace() {
           </div>
 
           {/* Main scan viewport */}
-          <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+          <div className="flex-1 flex items-center justify-center relative overflow-hidden" onWheel={e => { if (tool === 'scroll') setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))); if (tool === 'zoom') setZoom(z => Math.min(4, Math.max(0.5, z + (e.deltaY > 0 ? -0.1 : 0.1)))) }}>
+
             {/* CT Scan illustration */}
-            <div style={{ transform: `scale(${zoom})`, transition: 'transform 0.1s', position: 'relative' }}>
+            <div style={{ transform: `translate(${tool === 'pan' ? 18 : 0}px, ${tool === 'pan' ? -12 : 0}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment('Measurement placed: 42 mm') }}>
+
               <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block' }}>
                 {/* Outer skull */}
                 <ellipse cx="190" cy="185" rx="155" ry="165" fill="none" stroke="#C8C8C8" strokeWidth="12" />
@@ -225,8 +227,8 @@ export function CaseWorkspace() {
               >◀</button>
               <input
                 type="range" min={1} max={maxSlice} value={slice}
-                onChange={e => setSlice(+e.target.value)}
-                className="flex-1"
+onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (next / maxSlice) * 3.5) }}
+              className="flex-1"
                 style={{ accentColor: '#1D4ED8' }}
               />
               <button

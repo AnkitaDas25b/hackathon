@@ -30,7 +30,7 @@ export function AdminDashboard() {
   }).slice(0, 6)
 
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-6xl">
       {/* Alert bar */}
       {critical.some(p => !p.assignedDoctorId) && (
         <div
@@ -52,7 +52,7 @@ export function AdminDashboard() {
       )}
 
       {/* Stats grid */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
         {stats.map(s => (
           <Card key={s.label} style={{ padding: 16 }}>
             <div className="flex items-start justify-between mb-2">
@@ -76,8 +76,8 @@ export function AdminDashboard() {
             <h2 className="text-sm font-semibold" style={{ color: '#0F172A' }}>Urgent Patients</h2>
             <Btn variant="ghost" size="xs" onClick={() => setView('admin-queue')}>View all →</Btn>
           </div>
-          <Card>
-            <table className="w-full text-sm">
+          <Card style={{ overflow: 'hidden' }}>
+            <div className="overflow-x-auto"><table className="min-w-[760px] w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
                   {['Patient', 'Scan', 'AI Priority', 'AI Finding', 'Assigned', 'Waiting'].map(h => (
@@ -138,7 +138,7 @@ export function AdminDashboard() {
                   )
                 })}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </div>
 

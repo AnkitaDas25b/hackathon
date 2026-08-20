@@ -100,7 +100,13 @@ export function Login() {
                   </li>
                 ))}
               </ul>
-              {active && (
+              <div
+                className="mt-4 text-xs font-semibold flex items-center gap-1.5 justify-center py-2 rounded"
+                style={{ background: color, color: '#fff' }}
+              >
+                Enter as {title} →
+              </div>
+              {active && false && (
                 <div
                   className="mt-4 text-xs font-semibold flex items-center gap-1.5 justify-center py-2 rounded"
                   style={{ background: color, color: '#fff' }}

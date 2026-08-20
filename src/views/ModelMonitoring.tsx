@@ -15,7 +15,7 @@ const METRICS = [
 
 export function ModelMonitoring() {
   return (
-    <div className="p-6 max-w-6xl">
+    <div className="min-w-0 p-3 sm:p-6 max-w-6xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
@@ -50,7 +50,7 @@ export function ModelMonitoring() {
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
         {METRICS.map(m => (
           <Card key={m.label} style={{ padding: 16 }}>
             <div className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>{m.label}</div>
@@ -65,7 +65,7 @@ export function ModelMonitoring() {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-2 gap-5 mb-5">
+      <div className="grid grid-cols-1 gap-5 mb-5 lg:grid-cols-2">
         {/* Performance trend */}
         <Card style={{ padding: 20 }}>
           <div className="text-sm font-semibold mb-1" style={{ color: '#0F172A' }}>Performance Trend</div>
@@ -111,7 +111,7 @@ export function ModelMonitoring() {
           <div className="text-sm font-semibold" style={{ color: '#0F172A' }}>Performance by Imaging Modality</div>
           <div className="text-xs" style={{ color: '#94A3B8' }}>Agreement rate, sensitivity, and specificity per modality</div>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="min-w-[760px] w-full text-sm">
           <thead>
             <tr style={{ background: '#F8FAFC' }}>
               {['Modality', 'Cases', 'Agreement Rate', 'Sensitivity', 'Specificity', 'Trend'].map(h => (
@@ -141,7 +141,7 @@ export function ModelMonitoring() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Card>
 
       {/* Feedback pipeline */}

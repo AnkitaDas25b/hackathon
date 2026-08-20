@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context'
 import { Btn, Card } from '../components/ui'
+import type { Patient } from '../types'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -12,7 +13,7 @@ const STEPS = [
 ]
 
 export function PatientRegistration() {
-  const { setView } = useApp()
+  const { setView, registerPatient } = useApp()
   const [step, setStep] = useState<Step>(1)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'processing' | 'stored' | 'ai' | 'ready'>('idle')
@@ -260,7 +261,7 @@ export function PatientRegistration() {
                 Patient ID: P-20240812-012 · Study: STU-20240812-NEW
               </div>
               <div className="flex gap-3 justify-center">
-                <Btn variant="primary" size="sm" onClick={() => setView('admin-queue')}>Go to Patient Queue</Btn>
+                <Btn variant="primary" size="sm" onClick={() => { const newPatient: Patient = { id: `p-${Date.now()}`, name: 'New Registered Patient', age: 0, sex: 'M', phone: '', dob: '', symptoms: '', scanReason: 'New imaging order', modality: 'CT', region: 'Brain', priority: 'ROUTINE', aiSummary: 'Awaiting AI analysis', aiFindings: [], aiConfidence: 0, aiReason: '', aiModelVersion: 'v1.4', suggestedSpecialty: 'General Medicine', assignedDoctorId: null, waitingMinutes: 0, status: 'Registered', imagingStatus: 'Processing', aiStatus: 'Pending', studyId: `STU-${Date.now()}` }; registerPatient(newPatient); setView('admin-queue') }}>Go to Patient Queue</Btn>
                 <Btn variant="secondary" size="sm" onClick={() => setStep(1)}>Register Another</Btn>
               </div>
             </div>

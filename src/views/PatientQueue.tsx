@@ -8,14 +8,15 @@ type FilterPriority = Priority | 'ALL'
 type FilterAssigned = 'ALL' | 'ASSIGNED' | 'UNASSIGNED'
 
 export function PatientQueue() {
-  const { setView, setSelectedPatientId } = useApp()
+  const { setView, setSelectedPatientId, registeredPatients } = useApp()
+  const patients = [...PATIENTS, ...registeredPatients]
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('ALL')
   const [filterAssigned, setFilterAssigned] = useState<FilterAssigned>('ALL')
   const [filterModality, setFilterModality] = useState<string>('ALL')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'priority' | 'waiting'>('priority')
 
-  const filtered = PATIENTS
+  const filtered = patients
     .filter(p => p.status !== 'Completed')
     .filter(p => filterPriority === 'ALL' || p.priority === filterPriority)
     .filter(p => filterAssigned === 'ALL' || (filterAssigned === 'ASSIGNED' ? !!p.assignedDoctorId : !p.assignedDoctorId))
@@ -59,7 +60,7 @@ export function PatientQueue() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Patient Queue</h1>
-          <p className="text-sm" style={{ color: '#64748B' }}>{filtered.length} of {PATIENTS.filter(p => p.status !== 'Completed').length} patients</p>
+          <p className="text-sm" style={{ color: '#64748B' }}>{filtered.length} of {patients.filter(p => p.status !== 'Completed').length} patients</p>
         </div>
         <Btn variant="primary" size="sm" onClick={() => setView('admin-registration')}>+ Register Patient</Btn>
       </div>
@@ -129,7 +130,7 @@ export function PatientQueue() {
         <table className="min-w-[1180px] w-full text-sm">
           <thead>
             <tr style={{ borderBottom: '2px solid #F1F5F9' }}>
-              {['Patient', 'Age/Sex', 'Imaging Test', 'Study Status', 'AI Priority', 'AI Finding', 'Specialty', 'Assigned Doctor', 'Waiting', 'Status', ''].map(h => (
+              {['Patient', 'Age/Gender', 'Imaging Test', 'Study Status', 'AI Priority', 'AI Finding', 'Specialty', 'Assigned Doctor', 'Waiting', 'Status', ''].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
                   {h}
                 </th>
