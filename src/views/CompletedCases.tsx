@@ -1,10 +1,13 @@
 import { COMPLETED_CASES } from '../data/mock'
+import { useApp } from '../context'
 import { PriorityBadge, Card } from '../components/ui'
 
 export function CompletedCases() {
-  const total = COMPLETED_CASES.length
-  const agreed = COMPLETED_CASES.filter(c => c.aiAgreement === 'agreed').length
-  const disagreed = COMPLETED_CASES.filter(c => c.aiAgreement === 'disagreed').length
+  const { role } = useApp()
+  const visibleCases = role === 'doctor' ? COMPLETED_CASES.filter(c => c.assignedDoctor === 'Dr. Arjun Rao') : COMPLETED_CASES
+  const total = visibleCases.length
+  const agreed = visibleCases.filter(c => c.aiAgreement === 'agreed').length
+  const disagreed = visibleCases.filter(c => c.aiAgreement === 'disagreed').length
 
   return (
     <div className="min-w-0 p-3 sm:p-6 max-w-5xl">
@@ -45,7 +48,7 @@ export function CompletedCases() {
             </tr>
           </thead>
           <tbody>
-            {COMPLETED_CASES.map((c, i) => (
+            {visibleCases.map((c, i) => (
               <tr
                 key={c.id}
                 className="transition-colors"
@@ -67,7 +70,7 @@ export function CompletedCases() {
                   <div className="text-xs max-w-48 leading-relaxed" style={{ color: '#475569' }}>{c.diagnosis}</div>
                 </td>
                 <td className="px-5 py-3.5 text-xs" style={{ color: '#475569' }}>{c.assignedDoctor}</td>
-                <td className="px-5 py-3.5 text-xs" style={{ color: '#FFFFFF', fontFamily: 'var(--font-mono)' }}>{c.duration}</td>
+                <td className="px-5 py-3.5 text-xs" style={{ color: '#0F172A', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{c.duration || '—'}</td>
                 <td className="px-5 py-3.5">
                   {c.aiAgreement === 'agreed' ? (
                     <span className="text-xs px-2 py-0.5 rounded-sm" style={{ background: '#F0FDF4', color: '#15803D', fontFamily: 'var(--font-mono)' }}>✓ Agreed</span>

@@ -14,6 +14,7 @@ export function CaseWorkspace() {
   const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
   const [tool, setTool] = useState<'scroll' | 'zoom' | 'pan' | 'measure'>('scroll')
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [notes, setNotes] = useState('')
   const [feedbackState, setFeedbackState] = useState<'idle' | 'disagree-form' | 'submitted'>('idle')
   const [correctFinding, setCorrectFinding] = useState('')
@@ -166,7 +167,7 @@ export function CaseWorkspace() {
           <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); if (tool === 'scroll') setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))); if (tool === 'zoom') setZoom(z => Math.min(4, Math.max(0.5, z + (e.deltaY > 0 ? -0.1 : 0.1)))) }}>
 
             {/* CT Scan illustration */}
-            <div style={{ transform: `translate(${tool === 'pan' ? 18 : 0}px, ${tool === 'pan' ? -12 : 0}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment('Measurement placed: 42 mm') }}>
+            <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment('Measurement placed: 42 mm') }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
 
               <svg width="380" height="380" viewBox="0 0 380 380" style={{ display: 'block', maxWidth: 'min(380px, 78vw)', height: 'auto' }}>
                 {/* Outer skull */}
@@ -231,7 +232,7 @@ export function CaseWorkspace() {
               >◀</button>
               <input
                 type="range" min={1} max={maxSlice} value={slice}
-onChange={e => { const next = +e.target.value; setSlice(next); if (tool === 'zoom') setZoom(0.5 + (next / maxSlice) * 3.5) }}
+onChange={e => { const next = +e.target.value; setSlice(next); setZoom(0.5 + (next / maxSlice) * 3.5) }}
               className="flex-1"
                 style={{ accentColor: '#1D4ED8' }}
               />
@@ -251,7 +252,7 @@ onChange={e => { const next = +e.target.value; setSlice(next); if (tool === 'zoo
       {/* RIGHT: Info panel */}
       <div
         className="flex w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]"
-        style={{ width: 300, background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
+        style={{ width: '100%', background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}
         <div className="flex" style={{ borderBottom: '1px solid #E2E8F0' }}>

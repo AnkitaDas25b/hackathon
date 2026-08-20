@@ -36,7 +36,7 @@ export function Login() {
       </div>
 
       {/* Role cards */}
-      <div className="flex w-full max-w-xl flex-col gap-5 px-4 mb-10 sm:flex-row">
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-5 px-4 mb-10 sm:flex-row">
         {([
           {
             role: 'admin' as Role,

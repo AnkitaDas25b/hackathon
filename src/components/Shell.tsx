@@ -198,7 +198,7 @@ export function Shell({ children }: { children: ReactNode }) {
               {getViewTitle(view)}
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setView('notifications')}
               className="relative flex items-center justify-center rounded-full transition-colors"
@@ -216,6 +216,10 @@ export function Shell({ children }: { children: ReactNode }) {
                 </span>
               )}
             </button>
+            <div className="hidden items-center gap-2 sm:flex">
+              <button className="rounded border border-slate-200 px-2 py-1 text-[11px] text-slate-600" onClick={() => setRole(role === 'doctor' ? 'admin' : role === 'admin' ? 'radiologist' : 'doctor')}>Switch view</button>
+              <button className="rounded border border-slate-200 px-2 py-1 text-[11px] text-slate-600" onClick={() => { setRole('admin'); setView('login') }}>Sign out</button>
+            </div>
             <div className="flex items-center gap-2">
               <div
                 className="flex items-center justify-center rounded-full text-white text-xs font-semibold"
@@ -231,6 +235,10 @@ export function Shell({ children }: { children: ReactNode }) {
                   {role === 'doctor' ? 'Neurology' : role === 'radiologist' ? 'Radiology' : 'Admin / Reception'}
                 </div>
               </div>
+            </div>
+            <div className="flex flex-col gap-1 sm:hidden">
+              <button className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-600" onClick={() => setRole(role === 'doctor' ? 'admin' : role === 'admin' ? 'radiologist' : 'doctor')}>Switch</button>
+              <button className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-600" onClick={() => { setRole('admin'); setView('login') }}>Logout</button>
             </div>
           </div>
         </header>

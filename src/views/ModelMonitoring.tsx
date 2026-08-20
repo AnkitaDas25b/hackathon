@@ -144,8 +144,8 @@ export function ModelMonitoring() {
         </table></div>
       </Card>
 
-      {/* Feedback pipeline */}
-      <Card style={{ padding: 20 }}>
+      {/* Feedback pipeline removed from this monitoring view */}
+      {false && <Card style={{ padding: 20 }}>
         <div className="text-sm font-semibold mb-4" style={{ color: '#0F172A' }}>Feedback & Retraining Pipeline</div>
         <div className="flex items-center gap-0 overflow-x-auto">
           {[
@@ -176,7 +176,7 @@ export function ModelMonitoring() {
         <div className="mt-4 text-xs p-3 rounded-sm" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B' }}>
           <strong style={{ color: '#0F172A' }}>No automatic online learning.</strong> Feedback is collected and reviewed manually. Model updates are validated and deployed in controlled releases.
         </div>
-      </Card>
+      </Card>}
     </div>
   )
 }
