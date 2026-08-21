@@ -36,7 +36,7 @@ export function Login() {
       </div>
 
       {/* Role cards */}
-      <div className="mx-auto flex w-full max-w-[900px] flex-col items-center justify-center gap-5 px-4 mb-10 sm:flex-row">
+      <div className="mx-auto flex w-full max-w-[900px] flex-col items-stretch justify-center gap-5 px-4 mb-10 sm:flex-row">
         {([
           {
             role: 'admin' as Role,
@@ -74,9 +74,9 @@ export function Login() {
               onMouseLeave={() => setHovered(null)}
               onClick={() => handleSelect(role)}
               onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleSelect(role) } }}
-              className="text-left rounded-lg transition-all duration-150"
+              className="min-w-0 flex-1 text-left rounded-lg transition-all duration-150"
               style={{
-                width: '100%', maxWidth: 280, minHeight: 340, padding: 24,
+                width: '100%', minHeight: 340, padding: 24,
                 background: active ? '#FFFFFF' : '#FFFFFF',
                 border: active ? `2px solid ${color}` : '2px solid #E2E8F0',
                 boxShadow: active ? `0 4px 20px ${color}20` : '0 1px 3px rgba(0,0,0,0.06)',
