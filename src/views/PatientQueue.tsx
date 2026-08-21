@@ -8,8 +8,9 @@ type FilterPriority = Priority | 'ALL'
 type FilterAssigned = 'ALL' | 'ASSIGNED' | 'UNASSIGNED'
 
 export function PatientQueue() {
-  const { role, setView, setSelectedPatientId, registeredPatients } = useApp()
+  const { role, workflow, setView, setSelectedPatientId, registeredPatients } = useApp()
   const patients = [...PATIENTS, ...registeredPatients]
+  const getAssignedDoctor = (patient: typeof patients[number]) => workflow.consultantAssignments[patient.id] ?? patient.assignedDoctorId
   if (role === 'doctor') return null
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('ALL')
   const [filterAssigned, setFilterAssigned] = useState<FilterAssigned>('ALL')
@@ -20,7 +21,7 @@ export function PatientQueue() {
   const filtered = patients
     .filter(p => p.status !== 'Completed')
     .filter(p => filterPriority === 'ALL' || p.priority === filterPriority)
-    .filter(p => filterAssigned === 'ALL' || (filterAssigned === 'ASSIGNED' ? !!p.assignedDoctorId : !p.assignedDoctorId))
+    .filter(p => filterAssigned === 'ALL' || (filterAssigned === 'ASSIGNED' ? !!getAssignedDoctor(p) : !getAssignedDoctor(p)))
     .filter(p => filterModality === 'ALL' || p.modality === filterModality)
     .filter(p =>
       search === '' ||
@@ -68,7 +69,7 @@ export function PatientQueue() {
 
       {/* Filters */}
       <Card style={{ padding: 14, marginBottom: 16 }}>
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-stretch gap-3 flex-wrap">
           {/* Search */}
           <input
             value={search}
@@ -140,7 +141,8 @@ export function PatientQueue() {
           </thead>
           <tbody>
             {filtered.map((p, i) => {
-              const doctor = DOCTORS.find(d => d.id === p.assignedDoctorId)
+              const assignedDoctorId = getAssignedDoctor(p)
+              const doctor = DOCTORS.find(d => d.id === assignedDoctorId)
               return (
                 <tr
                   key={p.id}
@@ -159,7 +161,7 @@ export function PatientQueue() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: '#475569', fontFamily: 'var(--font-mono)' }}>
-                    {p.age}{p.sex}
+                    {p.age} / {p.sex === 'M' ? 'Male' : 'Female'}
                   </td>
                   <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: '#475569' }}>
                     {p.modality} · {p.region}
@@ -195,12 +197,12 @@ export function PatientQueue() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1.5">
-                      {!p.assignedDoctorId && (
+                      {!assignedDoctorId && (
                         <Btn variant="primary" size="xs" onClick={() => { setSelectedPatientId(p.id); setView('admin-assignment') }}>
                           Assign
                         </Btn>
                       )}
-                      <Btn variant="ghost" size="xs" onClick={() => { setSelectedPatientId(p.id); setView('patient-timeline') }}>
+                      <Btn variant="ghost" size="xs" onClick={() => { setSelectedPatientId(p.id); setView(role === 'admin' ? 'patient-timeline' : 'doctor-case') }}>
                         Timeline
                       </Btn>
                     </div>

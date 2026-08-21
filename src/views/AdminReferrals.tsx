@@ -4,7 +4,7 @@ import { REFERRALS, DOCTORS, PATIENTS } from '../data/mock'
 import { PriorityBadge, AvailabilityDot, Btn, Card } from '../components/ui'
 
 export function AdminReferrals() {
-  const { setView, setSelectedPatientId } = useApp()
+  const { setView, setSelectedPatientId, assignConsultant } = useApp()
   const [assignedReferral, setAssignedReferral] = useState<string | null>(null)
   const [expandedReferral, setExpandedReferral] = useState<string | null>(REFERRALS[1].id)
 
@@ -44,7 +44,7 @@ export function AdminReferrals() {
             <Card key={referral.id} style={{ overflow: 'hidden', border: referral.urgency === 'CRITICAL' ? '1px solid #FECACA' : '1px solid #E2E8F0' }}>
               {/* Header */}
               <div
-                className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+                className="flex flex-wrap items-center gap-3 px-4 py-4 cursor-pointer sm:px-5"
                 style={{ background: isExpanded ? '#F8FAFC' : '#fff' }}
                 onClick={() => setExpandedReferral(isExpanded ? null : referral.id)}
               >
@@ -59,7 +59,7 @@ export function AdminReferrals() {
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-right" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
+                <div className="text-xs text-left sm:text-right" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
                   Submitted {referral.submittedAt}
                 </div>
                 <div
@@ -124,7 +124,7 @@ export function AdminReferrals() {
                         {doctorList.map(d => (
                           <div
                             key={d.id}
-                            className="flex items-center gap-3 p-3 rounded-md"
+                            className="flex min-w-0 flex-wrap items-center gap-3 p-3 rounded-md"
                             style={{ border: '1px solid #E2E8F0' }}
                           >
                             <div
@@ -145,7 +145,7 @@ export function AdminReferrals() {
                             <Btn
                               variant={d.availability === 'Available' ? 'primary' : 'secondary'}
                               size="xs"
-                              onClick={() => setAssignedReferral(referral.id)}
+                              onClick={() => { setAssignedReferral(referral.id); assignConsultant(referral.patientId, d.id) }}
                               disabled={isAssigned}
                             >
                               Assign

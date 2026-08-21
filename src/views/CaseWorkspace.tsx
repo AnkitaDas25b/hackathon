@@ -291,7 +291,7 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
                 </div>
                 <div className="space-y-1.5">
                   <InfoRow label="Name" value={patient.name} />
-                  <InfoRow label="Age / Sex" value={`${patient.age} / ${patient.sex === 'M' ? 'Male' : 'Female'}`} />
+                  <InfoRow label="Age / Gender" value={`${patient.age} / ${patient.sex === 'M' ? 'Male' : 'Female'}`} />
                   <InfoRow label="DOB" value={patient.dob} mono />
                   <InfoRow label="Phone" value={patient.phone} mono />
                   <InfoRow label="Patient ID" value={patient.id.toUpperCase()} mono />
@@ -423,7 +423,7 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
                   link.click()
                   URL.revokeObjectURL(url)
                 }}>Save Draft</Btn>
-                <Btn variant="primary" size="xs" onClick={() => confirmDiagnosis(patient.id)}>Confirm Diagnosis</Btn>
+                <Btn variant="primary" size="xs" onClick={() => { confirmDiagnosis(patient.id); setDoctorComment('Diagnosis confirmed and saved.') }}>Confirm Diagnosis</Btn>
               </div>
               <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 12 }}>
                 <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
@@ -432,11 +432,11 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
                 <div className="space-y-1.5">
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowReferralModal(true)}>→ Refer Patient</Btn>
                   <Btn variant="outline" size="xs" className="w-full" onClick={() => setShowImagingRequest(true)}>+ Request Additional Imaging</Btn>
-                  <Btn variant="outline" size="xs" className="w-full" onClick={() => { viewPreviousScan(patient.id); setSlice(1) }}>▤ View Previous Scans</Btn>
+                  <Btn variant="outline" size="xs" className="w-full" onClick={() => { viewPreviousScan(patient.id); setSlice(1); setDoctorComment('Previous scans loaded.') }}>▤ View Previous Scans</Btn>
                   <Btn variant="ghost" size="xs" className="w-full" onClick={() => { setSelectedPatientId(patient.id); setView('patient-timeline') }}>
                     ◌ View Patient Timeline
                   </Btn>
-                  <Btn variant="danger" size="xs" className="w-full" onClick={() => { completeCase(patient.id); setView('patient-timeline') }}>✓ Complete Case</Btn>
+                  <Btn variant="danger" size="xs" className="w-full" onClick={() => { completeCase(patient.id); setSelectedPatientId(null); setView('doctor-dashboard') }}>✓ Complete Case</Btn>
                 </div>
               </div>
             </div>
