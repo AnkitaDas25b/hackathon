@@ -8,11 +8,11 @@ const MY_DOCTOR_ID = 'd1'
 const PRIORITY_ORDER: Priority[] = ['CRITICAL', 'WARNING', 'ROUTINE']
 
 export function DoctorDashboard() {
-  const { setView, setSelectedPatientId } = useApp()
+  const { workflow, setView, setSelectedPatientId } = useApp()
 
   const myDoctor = DOCTORS.find(d => d.id === MY_DOCTOR_ID)!
   const myPatients = PATIENTS.filter(
-    p => p.assignedDoctorId === MY_DOCTOR_ID && p.status !== 'Completed'
+    p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && p.status !== 'Completed'
   )
 
   const grouped = PRIORITY_ORDER.reduce((acc, p) => {
@@ -95,7 +95,7 @@ export function DoctorDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="font-semibold text-sm" style={{ color: '#0F172A' }}>{p.name}</span>
-                        <span className="text-xs" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>{p.age}{p.sex}</span>
+                        <span className="text-xs" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>{p.age} / {p.sex === 'M' ? 'Male' : 'Female'}</span>
                         {p.isReferral && (
                           <span className="text-xs px-1.5 py-0.5 rounded-sm" style={{ background: '#FFF7ED', color: '#EA580C', fontFamily: 'var(--font-mono)' }}>
                             Referral
