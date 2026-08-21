@@ -256,7 +256,7 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
       {/* RIGHT: Info panel */}
       <div
         className={`${isFullscreen ? 'hidden' : 'flex'} w-full flex-col shrink-0 overflow-y-auto lg:w-[300px]`}
-        style={{ width: '100%', background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
+        style={{ background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' }}
       >
         {/* Panel tabs */}
         <div className="flex" style={{ borderBottom: '1px solid #E2E8F0' }}>
