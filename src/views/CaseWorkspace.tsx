@@ -77,9 +77,9 @@ export function CaseWorkspace() {
       </div>
 
       {/* CENTER: DICOM Viewer */}
-      <div className="flex-1 flex flex-col min-w-0" style={{ background: '#070A0D', position: 'relative' }}>
+      <div className="flex min-h-[620px] flex-1 flex-col min-w-0" style={{ background: '#070A0D', position: 'relative' }}>
         {/* Viewer toolbar */}
-        <div className="flex items-center gap-2 px-4 py-2" style={{ background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4" style={{ background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           {/* Tools */}
           {(['scroll', 'measure'] as const).map(t => (
             <button
@@ -137,7 +137,7 @@ export function CaseWorkspace() {
         </div>
 
         {/* Scan area */}
-        <div className={`${isFullscreen ? 'min-h-0' : 'min-h-[420px]'} flex min-w-0 flex-1 overflow-hidden lg:min-h-0`}>
+        <div className={`${isFullscreen ? 'min-h-0' : 'min-h-[520px]'} flex min-w-0 flex-1 overflow-hidden lg:min-h-0`}>
           {/* Series thumbnails */}
           <div
             className="flex flex-col gap-2 p-2 overflow-y-auto"
@@ -168,7 +168,7 @@ export function CaseWorkspace() {
           </div>
 
           {/* Main scan viewport */}
-          <div className="relative flex min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }} onPointerMove={e => { if (tool === 'scroll' && e.buttons === 1 && Math.abs(e.movementY) > 0) setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.movementY > 0 ? 1 : -1)))) }}>
+          <div className="relative flex min-h-[480px] min-w-0 flex-1 items-center justify-center overflow-auto" onWheel={e => { e.preventDefault(); setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.deltaY > 0 ? 1 : -1)))) }} onPointerMove={e => { if (tool === 'scroll' && e.buttons === 1 && Math.abs(e.movementY) > 0) setSlice(s => Math.min(maxSlice, Math.max(1, s + (e.movementY > 0 ? 1 : -1)))) }}>
 
             {/* CT Scan illustration */}
             <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transition: 'transform 0.1s', position: 'relative', cursor: tool === 'pan' ? 'grab' : 'default' }} onClick={() => { if (tool === 'measure') setDoctorComment(`Measurement placed: ${Math.round(42 * zoom)} mm`) }} onPointerMove={event => { if (tool === 'pan' && event.buttons === 1) setPanOffset(current => ({ x: current.x + event.movementX, y: current.y + event.movementY })) }}>
