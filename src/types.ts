@@ -41,6 +41,7 @@ export interface Patient {
   referralUrgency?: Priority
   referralReason?: string
   isReferral?: boolean
+  
 }
 
 export interface Doctor {
