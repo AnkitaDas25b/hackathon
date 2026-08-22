@@ -8,10 +8,11 @@ const MY_DOCTOR_ID = 'd1'
 const PRIORITY_ORDER: Priority[] = ['CRITICAL', 'WARNING', 'ROUTINE']
 
 export function DoctorDashboard() {
-  const { workflow, setView, setSelectedPatientId } = useApp()
+  const { workflow, registeredPatients, setView, setSelectedPatientId } = useApp()
 
   const myDoctor = DOCTORS.find(d => d.id === MY_DOCTOR_ID)!
-  const myPatients = PATIENTS.filter(
+  const allPatients = [...PATIENTS, ...registeredPatients.filter(registered => !PATIENTS.some(patient => patient.id === registered.id))]
+  const myPatients = allPatients.filter(
     p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && p.status !== 'Completed'
   )
 
