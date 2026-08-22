@@ -4,8 +4,7 @@ import { REFERRALS, DOCTORS, PATIENTS } from '../data/mock'
 import { PriorityBadge, AvailabilityDot, Btn, Card } from '../components/ui'
 
 export function AdminReferrals() {
-  const { setView, setSelectedPatientId, assignConsultant } = useApp()
-  const [assignedReferral, setAssignedReferral] = useState<string | null>(null)
+  const { setView, setSelectedPatientId, assignConsultant, workflow } = useApp()
   const [expandedReferral, setExpandedReferral] = useState<string | null>(REFERRALS[1].id)
 
   return (
@@ -32,7 +31,8 @@ export function AdminReferrals() {
         {REFERRALS.map(referral => {
           const patient = PATIENTS.find(p => p.id === referral.patientId)!
           const isExpanded = expandedReferral === referral.id
-          const isAssigned = assignedReferral === referral.id
+          const assignedDoctorId = workflow.consultantAssignments[referral.patientId] ?? referral.assignedDoctorId
+          const isAssigned = Boolean(assignedDoctorId)
 
           const matchedDoctors = DOCTORS.filter(d =>
             referral.requestedSpecialty.toLowerCase().includes(d.specialty.toLowerCase())
@@ -145,7 +145,7 @@ export function AdminReferrals() {
                             <Btn
                               variant={d.availability === 'Available' ? 'primary' : 'secondary'}
                               size="xs"
-                              onClick={() => { setAssignedReferral(referral.id); assignConsultant(referral.patientId, d.id) }}
+                              onClick={(event) => { event.stopPropagation(); assignConsultant(referral.patientId, d.id) }}
                               disabled={isAssigned}
                             >
                               Assign

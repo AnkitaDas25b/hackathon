@@ -16,13 +16,13 @@ const TYPE_CONFIG: Record<TimelineEvent['type'], { color: string; icon: string; 
 }
 
 export function PatientTimeline() {
-  const { selectedPatientId, setView, workflow } = useApp()
+  const { selectedPatientId, setView, workflow, role, setTimelineReturnPanel } = useApp()
   const patient = PATIENTS.find(p => p.id === selectedPatientId) ?? PATIENTS[0]
 
   return (
     <div className="min-w-0 p-3 sm:p-6 max-w-2xl">
       <div className="flex items-center gap-3 mb-5">
-        <button onClick={() => setView('admin-queue')} className="text-sm" style={{ color: '#64748B' }}>← Back</button>
+        <button onClick={() => { if (role === 'doctor') { setTimelineReturnPanel('notes'); setView('doctor-case') } else setView('admin-queue') }} className="text-sm" style={{ color: '#64748B' }}>← Back</button>
         <h1 className="text-lg font-semibold" style={{ color: '#0F172A' }}>Patient Timeline</h1>
       </div>
 
@@ -61,7 +61,7 @@ export function PatientTimeline() {
         />
 
         <div className="space-y-0">
-          {TIMELINE_EVENTS.filter(event => event.type !== 'completion' || workflow.diagnosisConfirmed.includes(patient.id)).map((event, i) => {
+          {TIMELINE_EVENTS.filter(event => event.type !== 'completion' || workflow.completedCases.includes(patient.id)).map((event, i) => {
             const cfg = TYPE_CONFIG[event.type]
             return (
               <div key={event.id} className="flex gap-4 relative pb-0">
