@@ -62,6 +62,8 @@ export function PatientTimeline() {
 
         <div className="space-y-0">
           {TIMELINE_EVENTS.filter(event => event.type !== 'completion' || workflow.completedCases.includes(patient.id)).map((event, i) => {
+            const patientEvent = event.type === 'registration' ? { ...event, label: `${patient.name} registered`, actor: 'Reception' } : event.type === 'assignment' ? { ...event, label: workflow.consultantAssignments[patient.id] ? `Assigned to ${workflow.consultantAssignments[patient.id]}` : patient.assignedDoctorId ? 'Assigned to consultant doctor' : 'Awaiting doctor assignment' } : event.type === 'completion' ? { ...event, label: 'Case completed by clinician' } : event
+            event = patientEvent
             const cfg = TYPE_CONFIG[event.type]
             return (
               <div key={event.id} className="flex gap-4 relative pb-0">
@@ -135,7 +137,7 @@ export function PatientTimeline() {
             </div>
           </div>
           <div>
-            <div className="text-xs" style={{ color: '#64748B' }}>{workflow.diagnosisConfirmed.includes(patient.id) ? 'Completed' : 'Status'}</div>
+            <div className="text-xs" style={{ color: '#64748B' }}>{workflow.completedCases.includes(patient.id) ? 'Completed' : workflow.consultantAssignments[patient.id] || patient.assignedDoctorId ? 'Assigned' : 'Status'}</div>
             <div className="text-sm font-semibold" style={{ color: '#0F172A', fontFamily: 'var(--font-mono)' }}>
               {workflow.diagnosisConfirmed.includes(patient.id) ? TIMELINE_EVENTS[TIMELINE_EVENTS.length - 1].time : 'In progress'}
             </div>
