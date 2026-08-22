@@ -13,7 +13,7 @@ export function CaseWorkspace() {
   const [slice, setSlice] = useState(24)
   const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
-  const [tool, setTool] = useState<'scroll' | 'measure'>('scroll')
+  const [tool, setTool] = useState<'scroll' | 'pan' | 'measure'>('scroll')
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [notes, setNotes] = useState('')
@@ -82,7 +82,7 @@ export function CaseWorkspace() {
         {/* Viewer toolbar */}
         <div className="flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4" style={{ background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
           {/* Tools */}
-          {(['scroll', 'measure'] as const).map(t => (
+          {(['scroll', 'pan', 'measure'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTool(t)}
@@ -94,7 +94,7 @@ export function CaseWorkspace() {
                 border: `1px solid ${tool === t ? '#1D4ED8' : '#1E293B'}`,
               }}
             >
-              {t === 'scroll' ? '↕ Scroll' : '◫ Measure'}
+              {t === 'scroll' ? '↕ Scroll' : t === 'pan' ? '✥ Pan' : '◫ Measure'}
             </button>
           ))}
 
