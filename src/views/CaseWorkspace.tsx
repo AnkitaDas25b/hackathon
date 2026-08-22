@@ -8,8 +8,8 @@ const MY_DOCTOR_ID = 'd1'
 type RightPanel = 'info' | 'ai' | 'notes' | 'feedback'
 
 export function CaseWorkspace() {
-  const { workflow, selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis, completeCase, viewPreviousScan } = useApp()
-  const [rightPanel, setRightPanel] = useState<RightPanel>('ai')
+  const { workflow, selectedPatientId, setSelectedPatientId, setView, confirmDiagnosis, completeCase, viewPreviousScan, registeredPatients, timelineReturnPanel, setTimelineReturnPanel } = useApp()
+  const [rightPanel, setRightPanel] = useState<RightPanel>(() => timelineReturnPanel ?? 'ai')
   const [slice, setSlice] = useState(24)
   const [series, setSeries] = useState(0)
   const [zoom, setZoom] = useState(1)
@@ -26,8 +26,9 @@ export function CaseWorkspace() {
   const [imagingRequested, setImagingRequested] = useState(false)
   const [urgency, setUrgency] = useState<'CRITICAL' | 'WARNING' | 'ROUTINE'>('ROUTINE')
 
-  const myPatients = PATIENTS.filter(p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && p.status !== 'Completed')
-  const patient = PATIENTS.find(p => p.id === selectedPatientId && (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID) ?? myPatients[0]!
+  const allPatients = [...PATIENTS, ...registeredPatients.filter(registered => !PATIENTS.some(patient => patient.id === registered.id))]
+  const myPatients = allPatients.filter(p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && !workflow.completedCases.includes(p.id) && p.status !== 'Completed')
+  const patient = allPatients.find(p => p.id === selectedPatientId && (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && !workflow.completedCases.includes(p.id)) ?? myPatients[0]!
 
   if (!patient) return (
     <div className="flex items-center justify-center h-full" style={{ color: '#94A3B8' }}>

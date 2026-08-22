@@ -17,6 +17,8 @@ interface AppContextType {
   setView: (v: View) => void
   selectedPatientId: string | null
   setSelectedPatientId: (id: string | null) => void
+  timelineReturnPanel: 'info' | 'ai' | 'notes' | 'feedback' | null
+  setTimelineReturnPanel: (panel: 'info' | 'ai' | 'notes' | 'feedback' | null) => void
   modal: string | null
   setModal: (m: string | null) => void
   workflow: WorkflowState
@@ -35,6 +37,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType>({
   role: null, setRole: () => {}, view: 'login', setView: () => {},
   selectedPatientId: null, setSelectedPatientId: () => {},
+  timelineReturnPanel: null, setTimelineReturnPanel: () => {},
   modal: null, setModal: () => {},
   workflow: { radiologistReviewed: [], uploadedStudies: [], consultantAssignments: {}, diagnosisConfirmed: [], completedCases: [], previousScansViewed: [] },
   markRadiologistReviewed: () => {}, markStudyUploaded: () => {}, assignConsultant: () => {},   confirmDiagnosis: () => {}, completeCase: () => {}, viewPreviousScan: () => {}, registeredPatients: [], registerPatient: () => {}, readNotifications: [], markNotificationsRead: () => {},
@@ -44,6 +47,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role | null>(null)
   const [view, setView] = useState<View>('login')
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>('p1')
+  const [timelineReturnPanel, setTimelineReturnPanel] = useState<'info' | 'ai' | 'notes' | 'feedback' | null>(null)
   const [modal, setModal] = useState<string | null>(null)
   const [workflow, setWorkflow] = useState<WorkflowState>(() => JSON.parse(localStorage.getItem('meditriage-workflow') || '{"radiologistReviewed":[],"uploadedStudies":[],"consultantAssignments":{},"diagnosisConfirmed":[],"completedCases":[],"previousScansViewed":[]}'))
   const [registeredPatients, setRegisteredPatients] = useState<Patient[]>(() => JSON.parse(localStorage.getItem('meditriage-registered-patients') || '[]'))
@@ -61,7 +65,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const viewPreviousScan = (patientId: string) => setWorkflow(current => ({ ...current, previousScansViewed: current.previousScansViewed.includes(patientId) ? current.previousScansViewed : [...current.previousScansViewed, patientId] }))
 
   return (
-    <AppContext.Provider value={{ role, setRole, view, setView, selectedPatientId, setSelectedPatientId, modal, setModal, workflow, markRadiologistReviewed, markStudyUploaded, assignConsultant, confirmDiagnosis, completeCase, viewPreviousScan, registeredPatients, registerPatient, readNotifications, markNotificationsRead }}>
+    <AppContext.Provider value={{ role, setRole, view, setView, selectedPatientId, setSelectedPatientId, timelineReturnPanel, setTimelineReturnPanel, modal, setModal, workflow, markRadiologistReviewed, markStudyUploaded, assignConsultant, confirmDiagnosis, completeCase, viewPreviousScan, registeredPatients, registerPatient, readNotifications, markNotificationsRead }}>
       {children}
     </AppContext.Provider>
   )
