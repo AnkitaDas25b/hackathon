@@ -1,4 +1,3 @@
-import type { VerifiedPatientIdentity } from "../types"
 
 /** Identifier capture is intentionally separate from validation and verification. */
 export const ABHA_PATTERN = /^\d{2}-\d{4}-\d{4}-\d{4}$/
@@ -19,31 +18,4 @@ export function validateAbha(value: string) {
   return ABHA_PATTERN.test(value)
     ? null
     : "Enter the 14-digit ABHA ID in the format 12-3456-7890-1234."
-}
-
-export type VerificationResult = {
-  ok: true
-  patient: VerifiedPatientIdentity
-} | { ok: false, message: string }
-
-/** Development-only adapter. Replace with an authenticated server-side ABDM adapter; it is not ABDM authentication. */
-export async function verifyAbhaForDevelopment(
-  abha: string,
-): Promise<VerificationResult> {
-  await new Promise((resolve) => setTimeout(resolve, 600))
-  if (abha.endsWith("0000"))
-    return {
-      ok: false,
-      message:
-        "We couldn't verify the ABHA ID right now. Please try again or enter it manually.",
-    }
-  return {
-    ok: true,
-    patient: {
-      patientId: `patient-${abha.replace(/\D/g, "").slice(-6)}`,
-      name: "Verified patient",
-      age: 42,
-      gender: "Not displayed",
-    },
-  }
 }

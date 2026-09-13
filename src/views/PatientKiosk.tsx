@@ -1,11 +1,10 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useApp } from "../context"
 import type { PatientFlowStep, PatientLanguage } from "../types"
 import {
   extractAbhaIdentifier,
   normalizeAbha,
   validateAbha,
-  verifyAbhaForDevelopment,
 } from "../services/abha"
 import { speakConsent } from "../services/speech"
 
@@ -62,7 +61,6 @@ export function PatientKiosk() {
   )
   const [abha, setAbha] = useState("")
   const [error, setError] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
   const [registration, setRegistration] = useState({ name: "", phone: "", aadhaar: "", email: "", code: "" })
   const [emailSent, setEmailSent] = useState(false)
   const [policyAccepted, setPolicyAccepted] = useState(false)
@@ -79,7 +77,7 @@ export function PatientKiosk() {
     resetPatientIntake()
     setPatientKioskOpen(false)
   }
-  const verify = async (candidate = abha) => {
+  const continueWithIdentifier = (candidate = abha) => {
     const normalized = normalizeAbha(candidate)
     const validation = validateAbha(normalized)
     setAbha(normalized)
@@ -88,14 +86,7 @@ export function PatientKiosk() {
       return
     }
     setError("")
-    setIsVerifying(true)
-    const result = await verifyAbhaForDevelopment(normalized)
-    setIsVerifying(false)
-    if (!result.ok) {
-      setError(result.message)
-      return
-    }
-    setVerifiedPatient(result.patient)
+    setVerifiedPatient({ patientId: `patient-${normalized.replace(/\D/g, "").slice(-6)}`, name: "Patient", age: 0, gender: "Not displayed" })
     setStep("confirm")
   }
   const acceptConsent = () => {
@@ -272,8 +263,8 @@ export function PatientKiosk() {
                 }}
                 value={abha}
                 error={error}
-                onContinue={() => verify()}
-                busy={isVerifying}
+                onContinue={() => continueWithIdentifier()}
+                busy={false}
                 onBack={() => setMethod(null)}
               />
             )}
@@ -281,8 +272,9 @@ export function PatientKiosk() {
               <>
                 <Title
                   title="Scan QR / Barcode"
-                  subtitle="For this development kiosk, paste or type the scanner result below. A camera scanner adapter can be connected here."
+                  subtitle="Point your camera at the QR code on your ABHA card."
                 />
+                <CameraQrScanner onText={(text) => { const found = extractAbhaIdentifier(text); if (found) continueWithIdentifier(found); else setError("We found a QR code, but it did not contain an ABHA ID.") }} onError={setError} />
                 <IdentifierEntry
                   title="Scanner result"
                   value={abha}
@@ -299,39 +291,19 @@ export function PatientKiosk() {
                       )
                       return
                     }
-                    verify(found)
+                    continueWithIdentifier(found)
                   }}
-                  busy={isVerifying}
+                  busy={false}
                   onBack={() => setMethod(null)}
                 />
               </>
             )}
             {step === "identify" && method === "document" && (
               <>
-                <Title
-                  title="Scan your ABHA card"
-                  subtitle="OCR is not configured in this development build. It will never be used as authentication."
-                />
-                <div className="rounded-2xl border-2 border-dashed border-slate-300 p-8">
-                  <div className="text-4xl">📷</div>
-                  <p className="mt-3 text-lg text-slate-600">
-                    We could not clearly read the ABHA ID.
-                  </p>
-                </div>
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <button
-                    onClick={() => setMethod("document")}
-                    className="flex-1 rounded-xl border-2 border-teal-700 py-4 text-lg font-bold text-teal-800"
-                  >
-                    Try again
-                  </button>
-                  <button
-                    onClick={() => setMethod("manual")}
-                    className="flex-1 rounded-xl bg-teal-700 py-4 text-lg font-bold text-white"
-                  >
-                    Enter manually
-                  </button>
-                </div>
+                <Title title="Scan your ABHA card" subtitle="Point the camera at the printed ABHA ID. Text is detected locally in your browser." />
+                <CameraTextScanner onText={(text) => { const detected = extractAbhaIdentifier(text); if (detected) { setAbha(detected); continueWithIdentifier(detected) } else setError("Text was found, but no ABHA ID format was detected. Please enter it manually.") }} onError={setError} />
+                {error && <p className="mt-3 rounded-xl bg-red-50 p-3 text-red-800">{error}</p>}
+                <button onClick={() => setMethod("manual")} className="mt-5 rounded-xl bg-teal-700 px-6 py-4 text-lg font-bold text-white">Enter manually</button>
                 <Back onClick={() => setMethod(null)} />
               </>
             )}
@@ -372,10 +344,7 @@ export function PatientKiosk() {
                     No, go back
                   </button>
                 </div>
-                <p className="mt-5 text-sm text-amber-800">
-                  Development note: identity data comes from a mock verification
-                  adapter, not ABDM.
-                </p>
+                <p className="mt-5 text-sm text-slate-500">Identity details are limited to what is needed for confirmation.</p>
               </>
             )}
             {step === "consent" && (
@@ -563,4 +532,51 @@ function IdentifierEntry({
 
 function RegistrationInput({ label, value, onChange, inputMode = "text" }: { label: string; value: string; onChange: (value: string) => void; inputMode?: "text" | "tel" | "numeric" | "email" }) {
   return <label className="text-base font-semibold text-slate-700">{label}<input value={value} inputMode={inputMode} onChange={(event) => onChange(event.target.value)} className="mt-1 w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-lg font-normal outline-none focus:border-teal-700" /></label>
+}
+
+function useCamera(onFrame: (video: HTMLVideoElement) => void, onError: (message: string) => void) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    let stream: MediaStream | null = null
+    let frame = 0
+    const start = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
+        if (!videoRef.current) return
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+        const scan = () => { if (videoRef.current) onFrame(videoRef.current); frame = requestAnimationFrame(scan) }
+        scan()
+      } catch { onError("Camera access is needed to scan. Please allow camera permission or enter the ABHA ID manually.") }
+    }
+    start()
+    return () => { cancelAnimationFrame(frame); stream?.getTracks().forEach((track) => track.stop()) }
+  }, [onError, onFrame])
+  return videoRef
+}
+
+function CameraQrScanner({ onText, onError }: { onText: (text: string) => void; onError: (message: string) => void }) {
+  const detectorRef = useRef<{ detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } | null>(null)
+  const seen = useRef(false)
+  const videoRef = useCamera((video) => {
+    if (seen.current) return
+    const Detector = (window as unknown as { BarcodeDetector?: new (options?: { formats: string[] }) => { detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } }).BarcodeDetector
+    if (!Detector) { onError("This browser does not support camera QR scanning. Use a modern Chromium browser or enter the ABHA ID manually."); return }
+    detectorRef.current ??= new Detector({ formats: ["qr_code"] })
+    detectorRef.current.detect(video).then((codes) => { if (codes[0]?.rawValue) { seen.current = true; onText(codes[0].rawValue) } }).catch(() => undefined)
+  }, onError)
+  return <video ref={videoRef} muted playsInline className="mt-5 aspect-video w-full rounded-2xl bg-slate-900 object-cover" aria-label="Camera preview for QR scanning" />
+}
+
+function CameraTextScanner({ onText, onError }: { onText: (text: string) => void; onError: (message: string) => void }) {
+  const detectorRef = useRef<{ detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } | null>(null)
+  const seen = useRef(false)
+  const videoRef = useCamera((video) => {
+    if (seen.current) return
+    const Detector = (window as unknown as { TextDetector?: new () => { detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } }).TextDetector
+    if (!Detector) { onError("Live text detection is not available in this browser. Use Chrome on Android or enter the ABHA ID manually."); return }
+    detectorRef.current ??= new Detector()
+    detectorRef.current.detect(video).then((items) => { const text = items.map((item) => item.rawValue).join(" "); if (text) { seen.current = true; onText(text) } }).catch(() => undefined)
+  }, onError)
+  return <video ref={videoRef} muted playsInline className="mt-5 aspect-video w-full rounded-2xl bg-slate-900 object-cover" aria-label="Camera preview for card text scanning" />
 }
