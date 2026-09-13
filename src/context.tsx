@@ -172,6 +172,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       JSON.stringify(consentRecords),
     )
   }, [consentRecords])
+  useEffect(() => {
+    document.documentElement.lang = patientLanguage
+  }, [patientLanguage])
   const registerPatient = (patient: Patient) =>
     setRegisteredPatients((current) => [...current, patient])
   const markNotificationsRead = (ids: string[]) =>

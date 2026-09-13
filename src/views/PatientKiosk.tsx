@@ -56,13 +56,16 @@ export function PatientKiosk() {
     intakeSession,
     resetPatientIntake,
   } = useApp()
-  const [step, setStep] = useState<PatientFlowStep>("welcome")
+  const [step, setStep] = useState<PatientFlowStep>("access")
   const [method, setMethod] = useState<"manual" | "qr" | "document" | null>(
     null,
   )
   const [abha, setAbha] = useState("")
   const [error, setError] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+  const [registration, setRegistration] = useState({ name: "", phone: "", aadhaar: "", email: "", code: "" })
+  const [emailSent, setEmailSent] = useState(false)
+  const [policyAccepted, setPolicyAccepted] = useState(false)
   const language =
     LANGUAGES.find((item) => item.id === patientLanguage) ?? LANGUAGES[0]
   const progress =
@@ -161,6 +164,14 @@ export function PatientKiosk() {
         </div>
         <main className="flex flex-1 items-center justify-center px-5 py-8 sm:px-10">
           <div className="w-full max-w-2xl text-center">
+            {step === "access" && (
+              <>
+                <div className="mb-5 text-6xl">🏥</div>
+                <Title title="Welcome to MediKiosk" subtitle="Sign in if you are registered, or create a simple patient account." />
+                <Choice icon="🔐" title="Sign in" detail="Use your ABHA ID to find your patient record." onClick={() => setStep("welcome")} />
+                <Choice icon="✦" title="Sign up" detail="Register without an ABHA ID using basic identity and email verification." onClick={() => setStep("welcome")} />
+              </>
+            )}
             {step === "welcome" && (
               <>
                 <div className="mb-5 text-6xl">👋</div>
@@ -205,10 +216,25 @@ export function PatientKiosk() {
                 <Choice
                   icon="✦"
                   title="No, I am a new patient"
-                  detail="We will not create an ABHA ID here. A staff member can help you register."
-                  onClick={() => setStep("identify")}
+                  detail="Register with name, phone number, Aadhaar number, and verified email."
+                  onClick={() => setStep("register")}
                 />
                 <Back onClick={() => setStep("welcome")} />
+              </>
+            )}
+            {step === "register" && (
+              <>
+                <Title title="Create your patient account" subtitle="We only ask for the details needed to identify you. Verify your email before continuing." />
+                <div className="mt-6 grid gap-3 text-left">
+                  <RegistrationInput label="Full name" value={registration.name} onChange={(name) => setRegistration({ ...registration, name })} />
+                  <RegistrationInput label="Phone number" inputMode="tel" value={registration.phone} onChange={(phone) => setRegistration({ ...registration, phone })} />
+                  <RegistrationInput label="Aadhaar number" inputMode="numeric" value={registration.aadhaar} onChange={(aadhaar) => setRegistration({ ...registration, aadhaar })} />
+                  <RegistrationInput label="Email address" inputMode="email" value={registration.email} onChange={(email) => setRegistration({ ...registration, email })} />
+                  {emailSent && <RegistrationInput label="Email verification code" inputMode="numeric" value={registration.code} onChange={(code) => setRegistration({ ...registration, code })} />}
+                </div>
+                {!emailSent ? <Primary label="Send email verification code" onClick={() => { if (!registration.name || !registration.phone || !/^\d{12}$/.test(registration.aadhaar) || !/^\S+@\S+\.\S+$/.test(registration.email)) { setError("Enter your name, phone number, 12-digit Aadhaar number, and a valid email address."); return }; setError(""); setEmailSent(true) }} /> : <Primary label="Verify email and continue →" onClick={() => { if (registration.code.length < 4) { setError("Enter the verification code sent to your email."); return }; setVerifiedPatient({ patientId: `patient-${registration.aadhaar.slice(-6)}`, name: registration.name, age: 0, gender: "Not displayed" }); setStep("consent") }} />}
+                {error && <p className="mt-3 rounded-xl bg-red-50 p-3 text-red-800">{error}</p>}
+                <Back onClick={() => setStep("patient-type")} />
               </>
             )}
             {step === "identify" && !method && (
@@ -363,10 +389,13 @@ export function PatientKiosk() {
                 >
                   🔊 Listen
                 </button>
+                <details className="mt-5 rounded-xl border border-slate-200 p-4 text-left text-sm text-slate-600"><summary className="cursor-pointer text-base font-bold text-slate-800">Read the patient consent policy</summary><p className="mt-3">MediKiosk uses the information you provide to prepare a clinical history for your healthcare provider. Your assessment does not begin unless you agree. This implementation structure must be reviewed by the hospital's legal and compliance teams before production use.</p></details>
+                <label className="mt-5 flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-left text-base text-slate-700"><input type="checkbox" checked={policyAccepted} onChange={(event) => setPolicyAccepted(event.target.checked)} className="mt-1 h-6 w-6 accent-teal-700" /><span>I have read and agree to the patient consent policy.</span></label>
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
                   <button
+                    disabled={!policyAccepted}
                     onClick={acceptConsent}
-                    className="rounded-xl bg-teal-700 py-5 text-xl font-bold text-white"
+                    className="rounded-xl bg-teal-700 py-5 text-xl font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     I agree
                   </button>
@@ -530,4 +559,8 @@ function IdentifierEntry({
       <Back onClick={onBack} />
     </>
   )
+}
+
+function RegistrationInput({ label, value, onChange, inputMode = "text" }: { label: string; value: string; onChange: (value: string) => void; inputMode?: "text" | "tel" | "numeric" | "email" }) {
+  return <label className="text-base font-semibold text-slate-700">{label}<input value={value} inputMode={inputMode} onChange={(event) => onChange(event.target.value)} className="mt-1 w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-lg font-normal outline-none focus:border-teal-700" /></label>
 }

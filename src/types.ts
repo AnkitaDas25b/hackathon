@@ -103,7 +103,7 @@ export type View = "login" | "admin-dashboard" | "admin-queue" | "admin-registra
 export type Role = "admin" | "doctor" | "radiologist"
 
 export type PatientLanguage = "en" | "hi" | "ta"
-export type PatientFlowStep = "welcome" | "patient-type" | "identify" | "verify" | "confirm" | "consent" | "declined" | "ready" | "history"
+export type PatientFlowStep = "access" | "welcome" | "patient-type" | "register" | "identify" | "verify" | "confirm" | "consent" | "declined" | "ready" | "history"
 export type ConsentStatus = "granted" | "declined"
 
 export interface VerifiedPatientIdentity {
