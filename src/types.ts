@@ -1,12 +1,9 @@
-export type Priority = 'CRITICAL' | 'WARNING' | 'ROUTINE'
-export type ImagingModality = 'CT' | 'MRI' | 'X-Ray' | 'PET' | 'Ultrasound'
-export type PatientStatus =
-  | 'Registered' | 'Test Ordered' | 'Imaging Pending' | 'Imaging Processing'
-  | 'AI Processing' | 'Awaiting Assignment' | 'Assigned' | 'Under Review'
-  | 'Referral Requested' | 'Reassigned' | 'Completed'
-export type ImagingStatus = 'Uploading' | 'Processing' | 'Ready' | 'Failed'
-export type AIStatus = 'Pending' | 'Analyzing' | 'Complete' | 'Failed' | 'Needs Review'
-export type DoctorAvailability = 'Available' | 'Busy' | 'Away' | 'In Procedure'
+export type Priority = "CRITICAL" | "WARNING" | "ROUTINE"
+export type ImagingModality = "CT" | "MRI" | "X-Ray" | "PET" | "Ultrasound"
+export type PatientStatus = "Registered" | "Test Ordered" | "Imaging Pending" | "Imaging Processing" | "AI Processing" | "Awaiting Assignment" | "Assigned" | "Under Review" | "Referral Requested" | "Reassigned" | "Completed"
+export type ImagingStatus = "Uploading" | "Processing" | "Ready" | "Failed"
+export type AIStatus = "Pending" | "Analyzing" | "Complete" | "Failed" | "Needs Review"
+export type DoctorAvailability = "Available" | "Busy" | "Away" | "In Procedure"
 
 export interface AIFinding {
   finding: string
@@ -17,7 +14,7 @@ export interface Patient {
   id: string
   name: string
   age: number
-  sex: 'M' | 'F'
+  sex: "M" | "F"
   phone: string
   dob: string
   symptoms: string
@@ -41,7 +38,6 @@ export interface Patient {
   referralUrgency?: Priority
   referralReason?: string
   isReferral?: boolean
-  
 }
 
 export interface Doctor {
@@ -66,17 +62,17 @@ export interface Referral {
   urgency: Priority
   submittedAt: string
   assignedDoctorId: string | null
-  status: 'Pending' | 'Assigned' | 'Completed'
+  status: "Pending" | "Assigned" | "Completed"
 }
 
 export interface Notification {
   id: string
-  type: 'critical' | 'warning' | 'info' | 'success'
+  type: "critical" | "warning" | "info" | "success"
   title: string
   message: string
   timestamp: string
   read: boolean
-  forRole: 'admin' | 'doctor' | 'both'
+  forRole: "admin" | "doctor" | "both"
 }
 
 export interface TimelineEvent {
@@ -84,14 +80,14 @@ export interface TimelineEvent {
   time: string
   label: string
   actor: string
-  type: 'registration' | 'order' | 'imaging' | 'ai' | 'assignment' | 'clinical' | 'referral' | 'completion'
+  type: "registration" | "order" | "imaging" | "ai" | "assignment" | "clinical" | "referral" | "completion"
 }
 
 export interface CompletedCase {
   id: string
   patientName: string
   age: number
-  sex: 'M' | 'F'
+  sex: "M" | "F"
   modality: ImagingModality
   region: string
   priority: Priority
@@ -99,22 +95,39 @@ export interface CompletedCase {
   assignedDoctor: string
   completedAt: string
   duration: string
-  aiAgreement: 'agreed' | 'disagreed' | 'not_reviewed'
+  aiAgreement: "agreed" | "disagreed" | "not_reviewed"
 }
 
-export type View =
-  | 'login'
-  | 'admin-dashboard'
-  | 'admin-queue'
-  | 'admin-registration'
-  | 'admin-assignment'
-  | 'admin-referrals'
-  | 'admin-model-monitoring'
-  | 'radiologist-dashboard'
-  | 'doctor-dashboard'
-  | 'doctor-case'
-  | 'patient-timeline'
-  | 'notifications'
-  | 'completed-cases'
+export type View = "login" | "admin-dashboard" | "admin-queue" | "admin-registration" | "admin-assignment" | "admin-referrals" | "admin-model-monitoring" | "radiologist-dashboard" | "doctor-dashboard" | "doctor-case" | "patient-timeline" | "notifications" | "completed-cases"
 
-export type Role = 'admin' | 'doctor' | 'radiologist'
+export type Role = "admin" | "doctor" | "radiologist"
+
+export type PatientLanguage = "en" | "hi" | "ta"
+export type PatientFlowStep = "welcome" | "patient-type" | "identify" | "verify" | "confirm" | "consent" | "declined" | "ready" | "history"
+export type ConsentStatus = "granted" | "declined"
+
+export interface VerifiedPatientIdentity {
+  patientId: string
+  name: string
+  age: number
+  gender: string
+}
+
+export interface ConsentRecord {
+  sessionId: string
+  patientId: string
+  consentType: "clinical_intake"
+  status: ConsentStatus
+  language: PatientLanguage
+  consentVersion: "1.0"
+  timestamp: string
+}
+
+export interface PatientIntakeSession {
+  sessionId: string
+  patientId: string
+  language: PatientLanguage
+  status: "ready_for_history"
+  consentStatus: "granted"
+  createdAt: string
+}
