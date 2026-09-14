@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../context'
 import { PATIENTS, DOCTORS } from '../data/mock'
 import { PriorityBadge, StatusPill, Btn, Card } from '../components/ui'
@@ -17,6 +17,9 @@ export function CaseWorkspace() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [notes, setNotes] = useState('')
+  const [editableSummary, setEditableSummary] = useState('')
+  const [summarySaved, setSummarySaved] = useState(false)
+  const [summaryPushed, setSummaryPushed] = useState(false)
   const [feedbackState, setFeedbackState] = useState<'idle' | 'disagree-form' | 'submitted'>('idle')
   const [correctFinding, setCorrectFinding] = useState('')
   const [doctorComment, setDoctorComment] = useState('')
@@ -29,6 +32,13 @@ export function CaseWorkspace() {
   const allPatients = [...PATIENTS, ...registeredPatients.filter(registered => !PATIENTS.some(patient => patient.id === registered.id))]
   const myPatients = allPatients.filter(p => (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && !workflow.completedCases.includes(p.id) && p.status !== 'Completed')
   const patient = allPatients.find(p => p.id === selectedPatientId && (workflow.consultantAssignments[p.id] ?? p.assignedDoctorId) === MY_DOCTOR_ID && !workflow.completedCases.includes(p.id)) ?? myPatients[0]!
+
+  useEffect(() => {
+    if (!patient) return
+    setEditableSummary(patient.aiSummary)
+    setSummarySaved(false)
+    setSummaryPushed(false)
+  }, [patient?.id, patient?.aiSummary])
 
   if (!patient) return (
     <div className="flex items-center justify-center h-full" style={{ color: '#94A3B8' }}>
@@ -323,6 +333,53 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
 
           {rightPanel === 'ai' && (
             <div className="space-y-4">
+              {/* AI-structured summary */}
+              <div className="rounded-md p-3" style={{ background: '#F0FDFA', border: '1px solid #99F6E4' }}>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#0F766E', fontFamily: 'var(--font-mono)' }}>
+                    AI-Structured Summary
+                  </div>
+                  <span className="text-xs px-1.5 py-0.5 rounded-sm" style={{ background: '#CCFBF1', color: '#0F766E', fontFamily: 'var(--font-mono)' }}>
+                    {summaryPushed ? 'PUSHED TO HIS' : summarySaved ? 'SAVED' : 'DRAFT'}
+                  </span>
+                </div>
+                <textarea
+                  rows={4}
+                  value={editableSummary}
+                  onChange={event => { setEditableSummary(event.target.value); setSummarySaved(false); setSummaryPushed(false) }}
+                  aria-label="Editable AI structured summary"
+                  className="w-full resize-none text-xs outline-none"
+                  style={{ padding: 9, borderRadius: 4, border: '1px solid #99F6E4', background: '#FFFFFF', color: '#134E4A', lineHeight: 1.55 }}
+                />
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <Btn variant="secondary" size="xs" onClick={() => setSummarySaved(true)}>
+                    Save Summary
+                  </Btn>
+                  <Btn variant="primary" size="xs" onClick={() => { setSummaryPushed(true); setSummarySaved(true) }}>
+                    {summaryPushed ? '✓ Pushed to HIS' : 'Push Summary to HIS'}
+                  </Btn>
+                </div>
+                <div className="mt-2 text-xs" style={{ color: '#0F766E' }}>
+                  Doctor-edited content is sent with the patient record for HIS review.
+                </div>
+              </div>
+
+              {/* Patient context */}
+              <div className="rounded-md p-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#64748B', fontFamily: 'var(--font-mono)' }}>
+                    Patient Context
+                  </div>
+                  <span className="text-xs" style={{ color: '#0F766E', fontFamily: 'var(--font-mono)' }}>ABHA + HIS</span>
+                </div>
+                <div className="space-y-1.5">
+                  <InfoRow label="Patient" value={`${patient.name}, ${patient.age}${patient.sex}`} />
+                  <InfoRow label="Current problem" value={patient.symptoms} wrap />
+                  <InfoRow label="Medications" value="No medication list available" wrap />
+                  <InfoRow label="Allergies" value="No known allergies" />
+                </div>
+              </div>
+
               {/* Triage result */}
               <div className="rounded-md p-3" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
                 <div className="text-xs font-semibold mb-1" style={{ color: '#991B1B', fontFamily: 'var(--font-mono)' }}>
