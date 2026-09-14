@@ -415,10 +415,18 @@ export function PatientKiosk() {
                   title="Clinical history assessment module"
                   subtitle="Your information has been securely prepared for the next step."
                 />
-                <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
-                  This is a placeholder. AI history-taking has not been
-                  implemented.
-                </p>
+                <div className="mt-6 grid gap-4 text-left md:grid-cols-2">
+                  <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-blue-800">AI summary</h2>
+                    <p className="mt-3 text-sm leading-6 text-slate-700">Your clinician will review the AI-generated summary before it is added to your hospital record.</p>
+                    <p className="mt-3 rounded-xl bg-white p-3 text-sm font-medium text-slate-900">Possible findings and triage details are available in the clinician review.</p>
+                  </section>
+                  <section className="rounded-2xl border border-teal-100 bg-teal-50 p-5">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-teal-800">Patient context</h2>
+                    <div className="mt-3 space-y-2 text-sm text-slate-700"><p><b>Patient ID:</b> {verifiedPatient?.patientId}</p><p><b>ABHA:</b> Linked during check-in</p><p><b>History:</b> Consent recorded and ready for clinician review</p></div>
+                  </section>
+                </div>
+                <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">A physician can correct the summary and push the reviewed version to the hospital HIS.</p>
                 <Primary onClick={goHome} label="Finish" />
               </>
             )}

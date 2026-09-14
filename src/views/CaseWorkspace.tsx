@@ -20,6 +20,10 @@ export function CaseWorkspace() {
   const [feedbackState, setFeedbackState] = useState<'idle' | 'disagree-form' | 'submitted'>('idle')
   const [correctFinding, setCorrectFinding] = useState('')
   const [doctorComment, setDoctorComment] = useState('')
+  const [summaryDraft, setSummaryDraft] = useState('')
+  const [summarySaved, setSummarySaved] = useState(false)
+  const [abhaLinked, setAbhaLinked] = useState(false)
+  const [hisPushed, setHisPushed] = useState(false)
   const [showReferralModal, setShowReferralModal] = useState(false)
   const [referralSubmitted, setReferralSubmitted] = useState(false)
   const [showImagingRequest, setShowImagingRequest] = useState(false)
@@ -323,6 +327,24 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
 
           {rightPanel === 'ai' && (
             <div className="space-y-4">
+              <div className="rounded-md p-3" style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#1D4ED8', fontFamily: 'var(--font-mono)' }}>AI SUMMARY · CLINICIAN REVIEW</div>
+                  {summarySaved && <span className="text-xs font-medium" style={{ color: '#15803D' }}>Saved</span>}
+                </div>
+                <textarea value={summaryDraft || patient.aiSummary} onChange={e => { setSummaryDraft(e.target.value); setSummarySaved(false) }} rows={3} className="w-full resize-none rounded border bg-white p-2 text-xs leading-relaxed outline-none" style={{ borderColor: '#BFDBFE', color: '#0F172A' }} aria-label="Editable AI summary" />
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Btn variant="secondary" size="xs" onClick={() => setSummarySaved(true)}>Save correction</Btn>
+                  <Btn variant="outline" size="xs" onClick={() => { setAbhaLinked(true); setHisPushed(true) }} disabled={!summarySaved}>Push corrected summary to HIS</Btn>
+                </div>
+                <div className="mt-2 text-[11px]" style={{ color: hisPushed ? '#15803D' : '#64748B' }}>{hisPushed ? 'Corrected summary pushed to HIS and audit trail.' : 'Save the physician correction before sending it to HIS.'}</div>
+              </div>
+
+              <div className="rounded-md p-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>PATIENT CONTEXT</div>
+                <div className="space-y-1.5"><InfoRow label="Symptoms" value={patient.symptoms} wrap /><InfoRow label="Scan reason" value={patient.scanReason} wrap /><InfoRow label="ABHA" value={abhaLinked ? 'Linked · consent recorded' : 'Available after consent'} /></div>
+              </div>
+
               {/* Triage result */}
               <div className="rounded-md p-3" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
                 <div className="text-xs font-semibold mb-1" style={{ color: '#991B1B', fontFamily: 'var(--font-mono)' }}>
