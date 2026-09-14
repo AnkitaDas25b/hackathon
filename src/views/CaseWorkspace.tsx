@@ -35,7 +35,7 @@ export function CaseWorkspace() {
 
   useEffect(() => {
     if (!patient) return
-    setEditableSummary(patient.aiSummary)
+    setEditableSummary(createDetailedSummary(patient))
     setSummarySaved(false)
     setSummaryPushed(false)
   }, [patient?.id, patient?.aiSummary])
@@ -370,13 +370,25 @@ type="range" min={0} max={300} value={Math.max(0, Math.round((zoom - 1) * 100))}
                   <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#64748B', fontFamily: 'var(--font-mono)' }}>
                     Patient Context
                   </div>
-                  <span className="text-xs" style={{ color: '#0F766E', fontFamily: 'var(--font-mono)' }}>ABHA + HIS</span>
+                  <button
+                    type="button"
+                    onClick={() => { setTimelineReturnPanel('ai'); setSelectedPatientId(patient.id); setView('patient-timeline') }}
+                    className="text-xs font-semibold"
+                    style={{ color: '#0F766E' }}
+                  >
+                    View full history →
+                  </button>
                 </div>
                 <div className="space-y-1.5">
                   <InfoRow label="Patient" value={`${patient.name}, ${patient.age}${patient.sex}`} />
                   <InfoRow label="Current problem" value={patient.symptoms} wrap />
+                  <InfoRow label="Reason for visit" value={patient.scanReason} wrap />
+                  <InfoRow label="Current study" value={`${patient.modality} · ${patient.region}`} />
                   <InfoRow label="Medications" value="No medication list available" wrap />
                   <InfoRow label="Allergies" value="No known allergies" />
+                </div>
+                <div className="mt-3 pt-3 text-xs" style={{ borderTop: '1px solid #E2E8F0', color: '#64748B' }}>
+                  Full history includes registration, imaging, AI triage, assignment, referrals, and clinical updates.
                 </div>
               </div>
 
@@ -660,4 +672,16 @@ function InfoRow({ label, value, mono, wrap }: { label: string; value: string; m
       </span>
     </div>
   )
+}
+
+function createDetailedSummary(patient: typeof PATIENTS[number]) {
+  const findings = patient.aiFindings.map(f => `${f.finding} (${f.confidence}% confidence)`).join('; ')
+  return [
+    `Presenting concern: ${patient.symptoms}.`,
+    `Reason for visit: ${patient.scanReason}.`,
+    `Study: ${patient.modality} of the ${patient.region} (${patient.studyId}).`,
+    `AI assessment: ${patient.aiSummary}. ${patient.aiReason}`,
+    `Potential findings: ${findings}.`,
+    `Suggested specialty: ${patient.suggestedSpecialty}. Clinical correlation and final assessment by the treating doctor are required.`,
+  ].join('\n\n')
 }
