@@ -7,6 +7,7 @@ import {
   validateAbha,
 } from "../services/abha"
 import { speakConsent } from "../services/speech"
+import { Html5Qrcode } from "html5-qrcode"
 
 const LANGUAGES: {
   id: PatientLanguage
@@ -534,49 +535,77 @@ function RegistrationInput({ label, value, onChange, inputMode = "text" }: { lab
   return <label className="text-base font-semibold text-slate-700">{label}<input value={value} inputMode={inputMode} onChange={(event) => onChange(event.target.value)} className="mt-1 w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-lg font-normal outline-none focus:border-teal-700" /></label>
 }
 
-function useCamera(onFrame: (video: HTMLVideoElement) => void, onError: (message: string) => void) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  useEffect(() => {
-    let stream: MediaStream | null = null
-    let frame = 0
-    const start = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
-        if (!videoRef.current) return
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-        const scan = () => { if (videoRef.current) onFrame(videoRef.current); frame = requestAnimationFrame(scan) }
-        scan()
-      } catch { onError("Camera access is needed to scan. Please allow camera permission or enter the ABHA ID manually.") }
-    }
-    start()
-    return () => { cancelAnimationFrame(frame); stream?.getTracks().forEach((track) => track.stop()) }
-  }, [onError, onFrame])
-  return videoRef
-}
-
 function CameraQrScanner({ onText, onError }: { onText: (text: string) => void; onError: (message: string) => void }) {
-  const detectorRef = useRef<{ detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } | null>(null)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
+  const containerId = useRef(`qr-scanner-${Math.random().toString(36).slice(2)}`)
   const seen = useRef(false)
-  const videoRef = useCamera((video) => {
-    if (seen.current) return
-    const Detector = (window as unknown as { BarcodeDetector?: new (options?: { formats: string[] }) => { detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } }).BarcodeDetector
-    if (!Detector) { onError("This browser does not support camera QR scanning. Use a modern Chromium browser or enter the ABHA ID manually."); return }
-    detectorRef.current ??= new Detector({ formats: ["qr_code"] })
-    detectorRef.current.detect(video).then((codes) => { if (codes[0]?.rawValue) { seen.current = true; onText(codes[0].rawValue) } }).catch(() => undefined)
-  }, onError)
-  return <video ref={videoRef} muted playsInline className="mt-5 aspect-video w-full rounded-2xl bg-slate-900 object-cover" aria-label="Camera preview for QR scanning" />
+  const isRunning = useRef(false)
+  const onTextRef = useRef(onText)
+  const onErrorRef = useRef(onError)
+
+  onTextRef.current = onText
+  onErrorRef.current = onError
+
+  useEffect(() => {
+    console.log("Initializing QR scanner with container:", containerId.current)
+    const scanner = new Html5Qrcode(containerId.current)
+    scannerRef.current = scanner
+
+    const startScanner = async () => {
+      try {
+        console.log("Starting scanner...")
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            console.log("QR code detected:", decodedText)
+            if (!seen.current) {
+              seen.current = true
+              onTextRef.current(decodedText)
+              isRunning.current = false
+              scanner.stop().catch(() => {})
+            }
+          },
+          (errorMessage) => {
+            console.log("Scan frame processed (no QR found)")
+          }
+        )
+        isRunning.current = true
+        console.log("Scanner started successfully")
+      } catch (err) {
+        console.error("Scanner failed to start:", err)
+        onErrorRef.current("Camera access is needed to scan. Please allow camera permission or enter the ABHA ID manually.")
+      }
+    }
+
+    // Small delay to ensure container is rendered
+    const timeoutId = setTimeout(startScanner, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+      console.log("Cleaning up scanner")
+      if (isRunning.current && scannerRef.current) {
+        scannerRef.current.stop().catch(() => {})
+      }
+    }
+  }, [])
+
+  return (
+    <div 
+      id={containerId.current} 
+      className="mt-5 w-full rounded-2xl overflow-hidden bg-slate-900" 
+      style={{ height: "400px" }}
+      aria-label="Camera preview for QR scanning"
+    />
+  )
 }
 
 function CameraTextScanner({ onText, onError }: { onText: (text: string) => void; onError: (message: string) => void }) {
-  const detectorRef = useRef<{ detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } | null>(null)
-  const seen = useRef(false)
-  const videoRef = useCamera((video) => {
-    if (seen.current) return
-    const Detector = (window as unknown as { TextDetector?: new () => { detect: (source: ImageBitmapSource) => Promise<{ rawValue: string }[]> } }).TextDetector
-    if (!Detector) { onError("Live text detection is not available in this browser. Use Chrome on Android or enter the ABHA ID manually."); return }
-    detectorRef.current ??= new Detector()
-    detectorRef.current.detect(video).then((items) => { const text = items.map((item) => item.rawValue).join(" "); if (text) { seen.current = true; onText(text) } }).catch(() => undefined)
-  }, onError)
-  return <video ref={videoRef} muted playsInline className="mt-5 aspect-video w-full rounded-2xl bg-slate-900 object-cover" aria-label="Camera preview for card text scanning" />
+  useEffect(() => {
+    onError("Text scanning is not currently supported. Please use the QR scanner or enter the ABHA ID manually.")
+  }, [onError])
+  return <div className="mt-5 aspect-video w-full rounded-2xl bg-slate-900 flex items-center justify-center text-white text-center p-4">Text scanning unavailable</div>
 }
