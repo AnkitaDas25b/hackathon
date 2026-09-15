@@ -7,7 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "vercel-install": "pnpm install --no-frozen-lockfile"
   },
   "dependencies": {
     "html5-qrcode": "^2.3.8",
