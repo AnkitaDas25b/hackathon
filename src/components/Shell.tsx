@@ -48,7 +48,7 @@ const DOCTOR_NAV: { section: string; items: NavItem[] }[] = [
     section: 'My Work',
     items: [
       { label: 'My Queue', view: 'doctor-dashboard', icon: '⊞' },
-      { label: 'Active Case', view: 'doctor-case', icon: '▦' },
+      { label: 'Clinical Summary', view: 'doctor-case', icon: '▦' },
     ],
   },
   {
@@ -252,7 +252,7 @@ function getViewTitle(view: View): string {
     'admin-model-monitoring': 'AI Model Monitoring',
     'radiologist-dashboard': 'Radiology Queue',
     'doctor-dashboard': 'My Patient Queue',
-    'doctor-case': 'Case Workspace',
+    'doctor-case': 'Clinical Summary Review',
     'patient-timeline': 'Patient Timeline',
     'notifications': 'Notifications',
     'completed-cases': 'Completed Cases',

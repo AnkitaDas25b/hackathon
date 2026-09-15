@@ -8,7 +8,7 @@ import { DoctorAssignment } from "./views/DoctorAssignment"
 import { AdminReferrals } from "./views/AdminReferrals"
 import { ModelMonitoring } from "./views/ModelMonitoring"
 import { DoctorDashboard } from "./views/DoctorDashboard"
-import { CaseWorkspace } from "./views/CaseWorkspace"
+import { ClinicalSummary } from "./views/ClinicalSummary"
 import { PatientTimeline } from "./views/PatientTimeline"
 import { NotificationsView } from "./views/Notifications"
 import { CompletedCases } from "./views/CompletedCases"
@@ -35,7 +35,7 @@ function ViewRouter() {
     case "doctor-dashboard":
       return <DoctorDashboard />
     case "doctor-case":
-      return <CaseWorkspace />
+      return <ClinicalSummary />
     case "patient-timeline":
       return <PatientTimeline />
     case "notifications":
